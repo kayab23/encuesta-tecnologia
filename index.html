@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encuesta de Necesidades Tecnológicas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #333;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0f3460 0%, #533483 100%);
+      color: white;
+      padding: 2.5rem 2rem;
+      border-radius: 16px 16px 0 0;
+      text-align: center;
+      border-bottom: 4px solid #e94560;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e94560;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .form-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f3460;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title .num {
+      background: #e94560;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 0.4rem;
+    }
+
+    .required::after {
+      content: ' *';
+      color: #e94560;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fafafa;
+      color: #333;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #0f3460;
+      box-shadow: 0 0 0 3px rgba(15,52,96,0.1);
+      background: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .field-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .radio-group,
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .radio-option,
+    .checkbox-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.6rem 0.9rem;
+      border: 2px solid #e8e8e8;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .radio-option:hover,
+    .checkbox-option:hover {
+      border-color: #0f3460;
+      background: #f0f4ff;
+    }
+
+    .radio-option input,
+    .checkbox-option input {
+      margin-top: 2px;
+      width: auto;
+      accent-color: #0f3460;
+      flex-shrink: 0;
+    }
+
+    .radio-option span,
+    .checkbox-option span {
+      font-size: 0.88rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    /* Escala de prioridad */
+    .scale-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .scale-item {
+      flex: 1;
+      min-width: 48px;
+    }
+
+    .scale-item input[type="radio"] {
+      display: none;
+    }
+
+    .scale-item label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .scale-item input[type="radio"]:checked + label {
+      background: #0f3460;
+      border-color: #0f3460;
+      color: white;
+    }
+
+    .scale-item label:hover {
+      border-color: #0f3460;
+      background: #e8f0ff;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #999;
+      margin-top: 0.3rem;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: #888;
+      margin-top: 0.3rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 1.5rem;
+      letter-spacing: 0.03em;
+    }
+
+    .submit-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+
+    .success-message {
+      display: none;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.8rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Instrucción de configuración */
+    .setup-banner {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      color: #856404;
+    }
+
+    .setup-banner strong { color: #533483; }
+    .setup-banner code {
+      background: #e9ecef;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="badge">Diagnóstico Interno</div>
+    <h1>Encuesta de Necesidades Tecnológicas</h1>
+    <p>Ayúdanos a entender las herramientas y procesos que necesita tu área para trabajar mejor con datos y tecnología.</p>
+  </div>
+
+<div class="form-card">
+
+    <form id="survey-form" action="https://formspree.io/f/mpqovapy" method="POST">
+      <!-- Campo oculto: evita spam -->
+      <input type="hidden" name="_subject" value="Nueva respuesta: Encuesta Necesidades Tecnológicas" />
+      <input type="text" name="_gotcha" style="display:none" />
+
+      <!-- ── SECCIÓN 1: Datos generales ── -->
+      <div class="section">
+        <div class="section-title"><span class="num">1</span> Datos Generales</div>
+
+        <div class="two-col">
+          <div class="field-group">
+            <label class="required">Nombre completo</label>
+            <input type="text" name="nombre" placeholder="Ej. Ana García" required />
+          </div>
+          <div class="field-group">
+            <label>Correo electrónico</label>
+            <input type="email" name="correo" placeholder="tucorreo@empresa.com" />
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="field-group">
+            <label class="required">Departamento / Área</label>
+            <select name="departamento" required>
+              <option value="" disabled selected>Selecciona tu área</option>
+              <option>Administración</option>
+              <option>Contabilidad / Finanzas</option>
+              <option>Compras / Logística</option>
+              <option>Ventas / Comercial</option>
+              <option>Operaciones</option>
+              <option>Recursos Humanos</option>
+              <option>Tecnología / TI</option>
+              <option>Dirección / Gerencia</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="required">Puesto / Cargo</label>
+            <input type="text" name="puesto" placeholder="Ej. Coordinador de Compras" required />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 2: Situación actual ── -->
+      <div class="section">
+        <div class="section-title"><span class="num">2</span> Situación Actual</div>
+
+        <div class="field-group">
+          <label class="required">¿Cuál es la herramienta principal que usa hoy para gestionar información o procesos?</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="herramienta_actual" value="Excel / Hoja de cálculo" required />
+              <span>Excel / Hoja de cálculo</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="herramienta_actual" value="Sistema ERP (SAP, Odoo, etc.)" />
+              <span>Sistema ERP (SAP, Odoo, etc.)</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="herramienta_actual" value="Aplicación interna" />
+              <span>Aplicación interna de la empresa</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="herramienta_actual" value="Papel / Documentos físicos" />
+              <span>Papel / Documentos físicos</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="herramienta_actual" value="Correo electrónico" />
+              <span>Correo electrónico</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="herramienta_actual" value="Otra" />
+              <span>Otra</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>¿Cuánto tiempo dedica a tareas manuales o repetitivas en su área? (por semana estimado)</label>
+          <select name="tiempo_manual">
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option>Menos de 2 horas</option>
+            <option>Entre 2 y 5 horas</option>
+            <option>Entre 5 y 10 horas</option>
+            <option>Más de 10 horas</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>¿Cuáles son los principales problemas o cuellos de botella actuales?</label>
+          <textarea name="problemas_actuales" placeholder="Describe brevemente los procesos o tareas que te generan más fricción..."></textarea>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 3: Tipo de solución deseada ── -->
+      <div class="section">
+        <div class="section-title"><span class="num">3</span> Tipo de Solución que Necesita</div>
+
+        <div class="field-group">
+          <label class="required">¿Qué tipo de solución considera más útil para su área? (puedes seleccionar varias)</label>
+          <div class="checkbox-group">
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Automatización en Excel (macros, fórmulas avanzadas)" />
+              <span>Automatización en Excel (macros, Power Query, fórmulas avanzadas)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Dashboard / Reporte visual (Power BI, Tableau)" />
+              <span>Dashboard / Reporte visual (Power BI, Google Looker Studio)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Aplicación web interna" />
+              <span>Aplicación web interna (formularios, catálogos, consultas)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Aplicación móvil" />
+              <span>Aplicación móvil (captura de datos en campo)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Automatización de correos / notificaciones" />
+              <span>Automatización de correos / notificaciones automáticas</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Base de datos centralizada" />
+              <span>Base de datos centralizada (reemplazar archivos dispersos)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Integración entre sistemas" />
+              <span>Integración entre sistemas (conectar ERP, Excel, correo, etc.)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="Capacitación / formación en herramientas" />
+              <span>Capacitación / formación en herramientas existentes</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="solucion[]" value="No tengo claro qué necesito" />
+              <span>No tengo claro qué necesito (requiero asesoría)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Si eligió "Aplicación web o móvil", ¿para qué proceso específico la necesitaría?</label>
+          <textarea name="detalle_app" placeholder="Ej. Registro de visitas, control de inventario, solicitud de viáticos..."></textarea>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 4: Prioridades ── -->
+      <div class="section">
+        <div class="section-title"><span class="num">4</span> Prioridades</div>
+
+        <div class="field-group">
+          <label class="required">¿Qué tanto impacto tendría una solución tecnológica en su área?</label>
+          <div class="scale-group">
+            <div class="scale-item">
+              <input type="radio" name="impacto" id="imp1" value="1" required />
+              <label for="imp1">1</label>
+            </div>
+            <div class="scale-item">
+              <input type="radio" name="impacto" id="imp2" value="2" />
+              <label for="imp2">2</label>
+            </div>
+            <div class="scale-item">
+              <input type="radio" name="impacto" id="imp3" value="3" />
+              <label for="imp3">3</label>
+            </div>
+            <div class="scale-item">
+              <input type="radio" name="impacto" id="imp4" value="4" />
+              <label for="imp4">4</label>
+            </div>
+            <div class="scale-item">
+              <input type="radio" name="impacto" id="imp5" value="5" />
+              <label for="imp5">5</label>
+            </div>
+          </div>
+          <div class="scale-labels">
+            <span>Poco impacto</span>
+            <span>Impacto muy alto</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="required">¿Cuál es la urgencia de implementar una solución?</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="urgencia" value="Inmediata (ya está afectando resultados)" required />
+              <span>Inmediata — ya está afectando los resultados del área</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="urgencia" value="Corto plazo (próximos 3 meses)" />
+              <span>Corto plazo — próximos 3 meses</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="urgencia" value="Mediano plazo (3 a 6 meses)" />
+              <span>Mediano plazo — 3 a 6 meses</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="urgencia" value="Sin urgencia definida" />
+              <span>Sin urgencia definida por el momento</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>¿Estaría dispuesto a participar activamente en el diseño/prueba de una solución?</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="participacion" value="Sí, con gusto" />
+              <span>Sí, con gusto</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="participacion" value="Sí, si hay tiempo" />
+              <span>Sí, dependiendo de la disponibilidad de tiempo</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="participacion" value="No en este momento" />
+              <span>No en este momento</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 5: Comentarios adicionales ── -->
+      <div class="section" style="border-bottom:none">
+        <div class="section-title"><span class="num">5</span> Comentarios Adicionales</div>
+
+        <div class="field-group">
+          <label>¿Hay algo más que quieras compartir sobre las necesidades de tu área?</label>
+          <textarea name="comentarios" placeholder="Cualquier comentario, idea o contexto adicional es bienvenido..." style="min-height:110px"></textarea>
+        </div>
+
+        <div class="field-group">
+          <label>¿Tienes alguna solución específica en mente que te gustaría proponer?</label>
+          <textarea name="propuesta" placeholder="Ej. 'Quisiera un sistema que registre automáticamente las entradas de almacén desde el celular...'"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Enviar respuesta →</button>
+
+      <div class="success-message" id="success-msg">
+        ✅ ¡Gracias por completar la encuesta! Tu respuesta fue registrada correctamente.
+      </div>
+    </form>
+  </div>
+
+  <p class="footer-note">Esta información será utilizada únicamente para mejorar los procesos internos de la organización.</p>
+</div>
+
+<script>
+  const form = document.getElementById('survey-form');
+  const success = document.getElementById('success-msg');
+  const btn = form.querySelector('.submit-btn');
+
+  form.addEventListener('submit', function (e) {
+    // Prevenir envío nativo SIEMPRE como primera acción
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Evitar doble clic
+    if (btn.disabled) return;
+
+    const action = form.getAttribute('action');
+
+    // Estado de carga
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    btn.style.opacity = '0.7';
+
+    const data = new FormData(form);
+
+    // Timeout de 15 segundos para evitar que se quede colgado
+    const controller = new AbortController();
+    const timeout = setTimeout(function () { controller.abort(); }, 15000);
+
+    fetch(action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
+    })
+    .then(function (response) {
+      clearTimeout(timeout);
+      if (response.ok) {
+        form.style.display = 'none';
+        success.style.display = 'block';
+        success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        return response.json().then(function (json) {
+          throw new Error(json.error || 'Error del servidor (' + response.status + ')');
+        });
+      }
+    })
+    .catch(function (err) {
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        alert('La solicitud tardó demasiado. Verifica tu conexión e intenta de nuevo.');
+      } else {
+        alert('Error al enviar: ' + err.message + '\n\nVerifica tu conexión e intenta de nuevo.');
+      }
+      // Restaurar botón para reintentar
+      btn.disabled = false;
+      btn.textContent = 'Enviar respuesta →';
+      btn.style.opacity = '1';
+    });
+  });
+</script>
+</body>
+</html>
