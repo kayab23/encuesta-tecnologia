@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resultados — Encuesta</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #333; min-height: 100vh; }
+
+    .navbar {
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .navbar h1 { font-size: 1.1rem; font-weight: 700; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; border: none;
+      transition: opacity 0.2s; font-family: inherit; text-decoration: none;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
+    .btn-primary { background: #e94560; color: white; }
+    .btn-success { background: #28a745; color: white; }
+
+    .main { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+    /* Resumen */
+    .summary-bar {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: white; border-radius: 12px; padding: 1.2rem 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07); flex: 1; min-width: 160px;
+    }
+    .stat-card .value { font-size: 2rem; font-weight: 800; color: #0f3460; }
+    .stat-card .label { font-size: 0.8rem; color: #888; margin-top: 0.2rem; }
+
+    /* Pregunta card */
+    .q-result-card {
+      background: white; border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      margin-bottom: 1.5rem; overflow: hidden;
+    }
+    .q-result-header {
+      background: #f8f9fd;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #eee;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .q-result-header .q-text { font-weight: 600; color: #0f3460; font-size: 0.95rem; flex: 1; }
+    .q-type-badge {
+      background: #e8f0ff; color: #0f3460;
+      padding: 0.2rem 0.6rem; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    }
+    .q-result-body { padding: 1.5rem; }
+
+    /* Chart */
+    .chart-wrap { position: relative; max-height: 280px; }
+
+    /* Text responses list */
+    .text-responses {
+      max-height: 300px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .text-response-item {
+      background: #f8f9fd;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #555;
+      border-left: 3px solid #0f3460;
+    }
+    .no-data { color: #bbb; font-style: italic; text-align: center; padding: 1rem; }
+
+    /* Loading / Error */
+    .state { text-align: center; padding: 4rem; color: #aaa; }
+    .state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    /* Auth overlay */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,52,96,0.95);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .login-box {
+      background: white; border-radius: 16px; padding: 2.5rem;
+      width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-box h2 { color: #0f3460; margin-bottom: 0.5rem; }
+    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%; padding: 0.8rem 1rem; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit;
+    }
+    .login-box button {
+      width: 100%; padding: 0.8rem;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .login-error { color: #e94560; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Login overlay -->
+<div class="overlay" id="login-overlay">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:1rem">🔐</div>
+    <h2>Acceso requerido</h2>
+    <p>Ingresa la clave de administrador</p>
+    <input type="password" id="key-input" placeholder="Clave de administrador"/>
+    <button onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Clave incorrecta. Intenta de nuevo.</div>
+  </div>
+</div>
+
+<nav class="navbar">
+  <h1 id="nav-title">📊 Resultados de encuesta</h1>
+  <div style="display:flex;gap:0.8rem">
+    <button class="btn btn-success" id="export-btn" onclick="exportCSV()" style="display:none">⬇ Exportar CSV</button>
+    <a href="/admin/" class="btn btn-outline">← Volver</a>
+  </div>
+</nav>
+
+<div class="main">
+  <!-- Loading -->
+  <div id="view-loading" class="state">
+    <div class="icon">⏳</div><p>Cargando resultados...</p>
+  </div>
+
+  <!-- Error -->
+  <div id="view-error" class="state" style="display:none">
+    <div class="icon">❌</div>
+    <p>No se pudieron cargar los resultados. Verifica el link o contacta al administrador.</p>
+  </div>
+
+  <!-- Resultados -->
+  <div id="view-results" style="display:none">
+    <div class="summary-bar">
+      <div class="stat-card">
+        <div class="value" id="total-responses">—</div>
+        <div class="label">Respuestas totales</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="total-questions">—</div>
+        <div class="label">Preguntas</div>
+      </div>
+    </div>
+
+    <div id="questions-results"></div>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('s');
+  const API = '/api/admin';
+
+  const COLORS = [
+    '#0f3460','#533483','#e94560','#1a6985','#28a745',
+    '#fd7e14','#6f42c1','#20c997','#dc3545','#6c757d'
+  ];
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function getKey() { return sessionStorage.getItem('adminKey') || ''; }
+
+  async function doLogin() {
+    const key = document.getElementById('key-input').value.trim();
+    if (!key) return;
+    const res = await fetch(`${API}/surveys`, { headers: { 'X-Admin-Key': key } });
+    if (res.ok) {
+      sessionStorage.setItem('adminKey', key);
+      document.getElementById('login-overlay').style.display = 'none';
+      loadResults();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  document.getElementById('key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  if (getKey()) {
+    document.getElementById('login-overlay').style.display = 'none';
+    loadResults();
+  }
+
+  // ── Cargar resultados ─────────────────────────────────────────────────────
+  async function loadResults() {
+    if (!slug) { show('view-error'); return; }
+
+    const res = await fetch(`${API}/surveys/${slug}/results`, {
+      headers: { 'X-Admin-Key': getKey() }
+    });
+
+    if (!res.ok) { show('view-error'); return; }
+    const data = await res.json();
+    renderResults(data);
+    show('view-results');
+    document.getElementById('export-btn').style.display = 'flex';
+    document.getElementById('nav-title').textContent = `📊 ${data.title}`;
+  }
+
+  function show(id) {
+    ['view-loading','view-error','view-results'].forEach(v => {
+      document.getElementById(v).style.display = v === id ? 'block' : 'none';
+    });
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  function renderResults(data) {
+    document.getElementById('total-responses').textContent = data.total_responses;
+    document.getElementById('total-questions').textContent = data.questions.length;
+
+    const container = document.getElementById('questions-results');
+    container.innerHTML = '';
+
+    data.questions.forEach((q, idx) => {
+      const card = document.createElement('div');
+      card.className = 'q-result-card';
+
+      const typeLabel = {
+        radio: 'Opción única', checkbox: 'Opción múltiple',
+        select: 'Lista', scale: 'Escala', text: 'Texto corto', textarea: 'Texto largo'
+      }[q.type] || q.type;
+
+      card.innerHTML = `
+        <div class="q-result-header">
+          <span class="q-text">${idx + 1}. ${esc(q.label)}</span>
+          <span class="q-type-badge">${typeLabel}</span>
+        </div>
+        <div class="q-result-body" id="body_q_${q.id}"></div>
+      `;
+      container.appendChild(card);
+
+      const body = document.getElementById(`body_q_${q.id}`);
+
+      if (['radio', 'checkbox', 'select', 'scale'].includes(q.type)) {
+        renderChart(body, q, idx);
+      } else {
+        renderTextList(body, q);
+      }
+    });
+  }
+
+  function renderChart(container, q, idx) {
+    if (!Object.keys(q.summary).length) {
+      container.innerHTML = '<div class="no-data">Sin respuestas aún.</div>';
+      return;
+    }
+
+    const isScale = q.type === 'scale';
+    const labels = isScale
+      ? Object.keys(q.summary).sort((a, b) => Number(a) - Number(b))
+      : Object.keys(q.summary).sort((a, b) => q.summary[b] - q.summary[a]);
+    const values = labels.map(k => q.summary[k]);
+    const total = values.reduce((a, b) => a + b, 0);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-wrap';
+    const canvas = document.createElement('canvas');
+    wrap.appendChild(canvas);
+    container.appendChild(wrap);
+
+    // Tabla de frecuencias debajo
+    const tableHtml = `
+      <table style="width:100%;margin-top:1rem;font-size:0.82rem;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f8f9fd">
+            <th style="padding:0.5rem;text-align:left;border-bottom:1px solid #eee">Opción</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:1px solid #eee">Respuestas</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:1px solid #eee">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${labels.map(k => `
+            <tr>
+              <td style="padding:0.5rem;border-bottom:1px solid #f5f5f5">${esc(String(k))}</td>
+              <td style="padding:0.5rem;text-align:right;border-bottom:1px solid #f5f5f5">${q.summary[k]}</td>
+              <td style="padding:0.5rem;text-align:right;border-bottom:1px solid #f5f5f5;color:#888">
+                ${total ? Math.round(q.summary[k] / total * 100) : 0}%
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    container.insertAdjacentHTML('beforeend', tableHtml);
+
+    const bgColors = labels.map((_, i) => COLORS[i % COLORS.length]);
+
+    new Chart(canvas, {
+      type: isScale ? 'bar' : 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Respuestas',
+          data: values,
+          backgroundColor: bgColors,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: isScale ? 'x' : 'y',
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+          y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } },
+        }
+      }
+    });
+  }
+
+  function renderTextList(container, q) {
+    if (!q.raw_values.length) {
+      container.innerHTML = '<div class="no-data">Sin respuestas aún.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <p style="font-size:0.8rem;color:#888;margin-bottom:0.8rem">${q.raw_values.length} respuesta(s)</p>
+      <div class="text-responses">
+        ${q.raw_values.map(v => `<div class="text-response-item">${esc(v)}</div>`).join('')}
+      </div>`;
+  }
+
+  // ── Exportar CSV ──────────────────────────────────────────────────────────
+  async function exportCSV() {
+    const res = await fetch(`${API}/surveys/${slug}/export`, {
+      headers: { 'X-Admin-Key': getKey() }
+    });
+    if (!res.ok) { alert('Error al exportar.'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resultados_${slug}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

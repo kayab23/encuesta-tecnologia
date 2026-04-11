@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Crear Encuesta</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #333; min-height: 100vh; }
+
+    .navbar {
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .navbar h1 { font-size: 1.1rem; font-weight: 700; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; border: none;
+      transition: opacity 0.2s; font-family: inherit; text-decoration: none;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #e94560; color: white; }
+    .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
+    .btn-add { background: #0f3460; color: white; }
+    .btn-remove { background: #dc3545; color: white; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    .btn-move { background: #e0e0e0; color: #333; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    .btn-success { background: #28a745; color: white; }
+
+    .main { max-width: 820px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f3460;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 0.4rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+      background: #fafafa;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #0f3460;
+      background: white;
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .field-group { margin-bottom: 1rem; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media(max-width:500px){ .two-col { grid-template-columns: 1fr; } }
+
+    /* Question card */
+    .q-card {
+      background: #fafbff;
+      border: 2px solid #e8eaf6;
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .q-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .q-card-header .q-num {
+      font-weight: 700;
+      color: #533483;
+      font-size: 0.85rem;
+    }
+
+    .q-card-actions { display: flex; gap: 0.3rem; }
+
+    .q-type-select { margin-bottom: 0.8rem; }
+
+    .options-hint { font-size: 0.75rem; color: #888; margin-top: 0.3rem; }
+
+    .required-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+    .required-toggle input { width: auto; cursor: pointer; accent-color: #0f3460; }
+    .required-toggle span { font-size: 0.83rem; color: #666; font-weight: 500; }
+
+    /* Scale config */
+    .scale-cfg { display: flex; gap: 0.8rem; }
+    .scale-cfg .field-group { flex: 1; }
+
+    /* Submit */
+    .submit-section { text-align: center; }
+    .submit-btn {
+      padding: 1rem 3rem;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-family: inherit;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .add-btn-wrap { text-align: center; margin: 1rem 0; }
+    .no-questions { text-align: center; color: #bbb; padding: 1.5rem; font-size: 0.9rem; }
+
+    /* Auth check */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,52,96,0.95);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .login-box {
+      background: white; border-radius: 16px; padding: 2.5rem;
+      width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-box h2 { color: #0f3460; margin-bottom: 0.5rem; }
+    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%; padding: 0.8rem 1rem; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit;
+    }
+    .login-box button {
+      width: 100%; padding: 0.8rem;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .login-error { color: #e94560; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Login overlay -->
+<div class="overlay" id="login-overlay">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:1rem">🔐</div>
+    <h2>Acceso requerido</h2>
+    <p>Ingresa la clave de administrador</p>
+    <input type="password" id="key-input" placeholder="Clave de administrador"/>
+    <button onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Clave incorrecta. Intenta de nuevo.</div>
+  </div>
+</div>
+
+<nav class="navbar">
+  <h1>📋 Plataforma de Encuestas — Nueva encuesta</h1>
+  <a href="/admin/" class="btn btn-outline">← Volver</a>
+</nav>
+
+<div class="main">
+
+  <!-- Datos generales -->
+  <div class="card">
+    <div class="card-title">Información de la encuesta</div>
+    <div class="field-group">
+      <label>Título de la encuesta <span style="color:#e94560">*</span></label>
+      <input type="text" id="survey-title" placeholder="Ej. Diagnóstico de necesidades tecnológicas — Área Compras" maxlength="250"/>
+    </div>
+    <div class="field-group">
+      <label>Descripción / instrucciones (opcional)</label>
+      <textarea id="survey-desc" placeholder="Explica brevemente el propósito de la encuesta y cómo se usarán los datos..."></textarea>
+    </div>
+  </div>
+
+  <!-- Preguntas -->
+  <div class="card">
+    <div class="card-title">Preguntas</div>
+
+    <div id="questions-list">
+      <div class="no-questions" id="no-q-msg">Aún no hay preguntas. Agrega la primera abajo.</div>
+    </div>
+
+    <div class="add-btn-wrap">
+      <button class="btn btn-add" onclick="addQuestion()">+ Agregar pregunta</button>
+    </div>
+  </div>
+
+  <!-- Publicar -->
+  <div class="card submit-section">
+    <div class="card-title" style="border:none;padding:0;margin-bottom:1rem">¿Todo listo?</div>
+    <p style="color:#888;font-size:0.88rem;margin-bottom:1.5rem">
+      Una vez creada obtendrás un link para compartir con tu equipo.
+    </p>
+    <button class="submit-btn" id="publish-btn" onclick="publishSurvey()">Publicar encuesta →</button>
+  </div>
+</div>
+
+<script>
+  const API = '/api/admin';
+  let questions = [];
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function getKey() { return sessionStorage.getItem('adminKey') || ''; }
+
+  async function doLogin() {
+    const key = document.getElementById('key-input').value.trim();
+    if (!key) return;
+    const res = await fetch(`${API}/surveys`, { headers: { 'X-Admin-Key': key } });
+    if (res.ok) {
+      sessionStorage.setItem('adminKey', key);
+      document.getElementById('login-overlay').style.display = 'none';
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  document.getElementById('key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  if (getKey()) {
+    document.getElementById('login-overlay').style.display = 'none';
+  }
+
+  // ── Gestión de preguntas ──────────────────────────────────────────────────
+  let qCounter = 0;
+
+  function addQuestion() {
+    qCounter++;
+    const id = `q_${qCounter}`;
+    questions.push({ _id: id });
+    renderQuestions();
+  }
+
+  function removeQuestion(id) {
+    questions = questions.filter(q => q._id !== id);
+    renderQuestions();
+  }
+
+  function moveQuestion(id, dir) {
+    const idx = questions.findIndex(q => q._id === id);
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= questions.length) return;
+    [questions[idx], questions[newIdx]] = [questions[newIdx], questions[idx]];
+    renderQuestions();
+  }
+
+  function renderQuestions() {
+    const list = document.getElementById('questions-list');
+    const noMsg = document.getElementById('no-q-msg');
+    noMsg.style.display = questions.length ? 'none' : 'block';
+
+    // Remove old cards (keep no-q-msg)
+    [...list.querySelectorAll('.q-card')].forEach(el => el.remove());
+
+    questions.forEach((q, idx) => {
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.id = `card_${q._id}`;
+      card.innerHTML = buildQuestionCard(q, idx);
+      list.insertBefore(card, noMsg);
+
+      // Restore values if any
+      if (q.type) {
+        const sel = card.querySelector('.type-select');
+        if (sel) { sel.value = q.type; onTypeChange(sel, q._id); }
+      }
+    });
+  }
+
+  function buildQuestionCard(q, idx) {
+    return `
+      <div class="q-card-header">
+        <span class="q-num">Pregunta ${idx + 1}</span>
+        <div class="q-card-actions">
+          <button class="btn btn-move" onclick="moveQuestion('${q._id}', -1)" title="Subir">▲</button>
+          <button class="btn btn-move" onclick="moveQuestion('${q._id}', 1)" title="Bajar">▼</button>
+          <button class="btn btn-remove" onclick="removeQuestion('${q._id}')">✕ Eliminar</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Texto de la pregunta *</label>
+        <input type="text" class="q-label-input" placeholder="Escribe la pregunta..."
+          onchange="saveField('${q._id}', 'label', this.value)"/>
+      </div>
+
+      <div class="field-group q-type-select">
+        <label>Tipo de respuesta</label>
+        <select class="type-select" onchange="onTypeChange(this, '${q._id}')">
+          <option value="radio">Opción única (radio)</option>
+          <option value="checkbox">Opción múltiple (checkbox)</option>
+          <option value="select">Lista desplegable</option>
+          <option value="scale">Escala numérica</option>
+          <option value="text">Texto corto</option>
+          <option value="textarea">Texto largo (párrafo)</option>
+        </select>
+      </div>
+
+      <div class="q-options-area"></div>
+
+      <label class="required-toggle">
+        <input type="checkbox" onchange="saveField('${q._id}', 'required', this.checked)"/>
+        <span>Respuesta obligatoria</span>
+      </label>
+    `;
+  }
+
+  function onTypeChange(sel, qId) {
+    const type = sel.value;
+    saveField(qId, 'type', type);
+    const card = document.getElementById(`card_${qId}`);
+    const area = card.querySelector('.q-options-area');
+    area.innerHTML = '';
+
+    if (['radio', 'checkbox', 'select'].includes(type)) {
+      area.innerHTML = `
+        <div class="field-group">
+          <label>Opciones (una por línea) *</label>
+          <textarea class="opts-input" rows="4" placeholder="Opción A&#10;Opción B&#10;Opción C"
+            onchange="saveField('${qId}', 'options_raw', this.value)"></textarea>
+          <div class="options-hint">Escribe cada opción en una línea separada.</div>
+        </div>`;
+    } else if (type === 'scale') {
+      area.innerHTML = `
+        <div class="scale-cfg">
+          <div class="field-group">
+            <label>Valor mínimo</label>
+            <input type="number" value="1" min="0" max="10"
+              onchange="saveScaleCfg('${qId}')' class="sc-min"/>
+          </div>
+          <div class="field-group">
+            <label>Valor máximo</label>
+            <input type="number" value="5" min="1" max="10"
+              onchange="saveScaleCfg('${qId}')" class="sc-max"/>
+          </div>
+          <div class="field-group">
+            <label>Etiqueta mínimo</label>
+            <input type="text" value="Bajo" class="sc-min-label"
+              onchange="saveScaleCfg('${qId}')"/>
+          </div>
+          <div class="field-group">
+            <label>Etiqueta máximo</label>
+            <input type="text" value="Alto" class="sc-max-label"
+              onchange="saveScaleCfg('${qId}')"/>
+          </div>
+        </div>`;
+      // set defaults immediately
+      saveScaleCfg(qId);
+    }
+  }
+
+  function saveField(qId, field, value) {
+    const q = questions.find(x => x._id === qId);
+    if (q) q[field] = value;
+  }
+
+  function saveScaleCfg(qId) {
+    const card = document.getElementById(`card_${qId}`);
+    const q = questions.find(x => x._id === qId);
+    if (!q || !card) return;
+    q.options = {
+      min: parseInt(card.querySelector('.sc-min')?.value || 1),
+      max: parseInt(card.querySelector('.sc-max')?.value || 5),
+      min_label: card.querySelector('.sc-min-label')?.value || 'Bajo',
+      max_label: card.querySelector('.sc-max-label')?.value || 'Alto',
+    };
+  }
+
+  // ── Publicar ──────────────────────────────────────────────────────────────
+  async function publishSurvey() {
+    const title = document.getElementById('survey-title').value.trim();
+    const desc = document.getElementById('survey-desc').value.trim();
+
+    if (!title) { alert('El título de la encuesta es obligatorio.'); return; }
+    if (!questions.length) { alert('Agrega al menos una pregunta.'); return; }
+
+    // Leer valores actuales del DOM antes de enviar
+    questions.forEach((q, idx) => {
+      const card = document.getElementById(`card_${q._id}`);
+      if (!card) return;
+      q.label = card.querySelector('.q-label-input')?.value?.trim() || q.label || '';
+      q.type = card.querySelector('.type-select')?.value || q.type || 'text';
+      q.required = card.querySelector('input[type="checkbox"]')?.checked || false;
+      q.order = idx + 1;
+
+      const optsTa = card.querySelector('.opts-input');
+      if (optsTa) {
+        q.options = optsTa.value.split('\n').map(o => o.trim()).filter(Boolean);
+        q.options_raw = null;
+      }
+
+      if (q.type === 'scale') saveScaleCfg(q._id);
+    });
+
+    // Validar preguntas
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      if (!q.label) { alert(`La pregunta ${i + 1} no tiene texto.`); return; }
+      if (['radio','checkbox','select'].includes(q.type)) {
+        if (!q.options || q.options.length < 2) {
+          alert(`La pregunta ${i + 1} necesita al menos 2 opciones.`); return;
+        }
+      }
+    }
+
+    const payload = {
+      title,
+      description: desc || null,
+      questions: questions.map((q, idx) => ({
+        type: q.type || 'text',
+        label: q.label,
+        options: q.options || null,
+        required: !!q.required,
+        order: idx + 1,
+      })),
+    };
+
+    const btn = document.getElementById('publish-btn');
+    btn.disabled = true;
+    btn.textContent = 'Publicando...';
+
+    const res = await fetch(`${API}/surveys`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getKey() },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const url = `${location.origin}/encuesta.html?s=${data.slug}`;
+      alert(`✅ Encuesta publicada.\n\nLink para compartir:\n${url}\n\nCópialo y envíalo a tu equipo.`);
+      location.href = '/admin/';
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert('Error: ' + (err.detail || 'No se pudo publicar.'));
+      btn.disabled = false;
+      btn.textContent = 'Publicar encuesta →';
+    }
+  }
+</script>
+</body>
+</html>

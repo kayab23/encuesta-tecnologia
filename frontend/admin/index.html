@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Encuestas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #333; min-height: 100vh; }
+
+    /* Navbar */
+    .navbar {
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .navbar h1 { font-size: 1.2rem; font-weight: 700; }
+    .navbar-actions { display: flex; gap: 0.8rem; align-items: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #e94560; color: white; }
+    .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
+    .btn-success { background: #28a745; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+
+    /* Layout */
+    .main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .page-header h2 { font-size: 1.3rem; color: #0f3460; }
+
+    /* Tabla */
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #f8f9fd;
+      padding: 0.8rem 1rem;
+      text-align: left;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #eee;
+    }
+    td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbff; }
+
+    .badge-active {
+      display: inline-block;
+      background: #d4edda;
+      color: #155724;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .badge-inactive {
+      display: inline-block;
+      background: #f8d7da;
+      color: #721c24;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .count-badge {
+      display: inline-block;
+      background: #e8f0ff;
+      color: #0f3460;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+    /* Copy link */
+    .link-text {
+      font-size: 0.75rem;
+      color: #999;
+      font-family: monospace;
+      background: #f5f5f5;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 3rem; color: #aaa; }
+    .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    /* Login overlay */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,52,96,0.95);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .login-box {
+      background: white;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    .login-box h2 { color: #0f3460; margin-bottom: 0.5rem; }
+    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      font-family: inherit;
+    }
+    .login-box input:focus { outline: none; border-color: #0f3460; }
+    .login-box button {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .login-error { color: #e94560; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #333;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Login overlay -->
+<div class="overlay" id="login-overlay">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:1rem">🔐</div>
+    <h2>Panel de Administración</h2>
+    <p>Ingresa la clave de acceso para continuar</p>
+    <input type="password" id="key-input" placeholder="Clave de administrador" />
+    <button onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Clave incorrecta. Intenta de nuevo.</div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <h1>📋 Plataforma de Encuestas</h1>
+  <div class="navbar-actions">
+    <a href="/admin/crear.html" class="btn btn-primary">+ Nueva encuesta</a>
+    <button class="btn btn-outline" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <div class="page-header">
+    <h2>Encuestas activas e históricas</h2>
+    <span id="count-label" style="color:#888;font-size:0.85rem"></span>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Slug / Link</th>
+          <th>Estado</th>
+          <th>Respuestas</th>
+          <th>Creada</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="surveys-tbody">
+        <tr><td colspan="6"><div class="empty"><div class="icon">⏳</div>Cargando...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '/api/admin';
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function getKey() { return sessionStorage.getItem('adminKey') || ''; }
+
+  function headers() {
+    return { 'Content-Type': 'application/json', 'X-Admin-Key': getKey() };
+  }
+
+  async function doLogin() {
+    const key = document.getElementById('key-input').value.trim();
+    if (!key) return;
+    // Verificar clave intentando listar encuestas
+    const res = await fetch(`${API}/surveys`, { headers: { 'X-Admin-Key': key } });
+    if (res.ok) {
+      sessionStorage.setItem('adminKey', key);
+      document.getElementById('login-overlay').style.display = 'none';
+      loadSurveys();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  document.getElementById('key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function logout() {
+    sessionStorage.removeItem('adminKey');
+    location.reload();
+  }
+
+  // Mostrar/ocultar login
+  if (getKey()) {
+    document.getElementById('login-overlay').style.display = 'none';
+    loadSurveys();
+  }
+
+  // ── Cargar encuestas ──────────────────────────────────────────────────────
+  async function loadSurveys() {
+    const res = await fetch(`${API}/surveys`, { headers: headers() });
+    if (!res.ok) { showLogin(); return; }
+    const surveys = await res.json();
+    renderTable(surveys);
+    document.getElementById('count-label').textContent = `${surveys.length} encuesta(s) en total`;
+  }
+
+  function renderTable(surveys) {
+    const tbody = document.getElementById('surveys-tbody');
+    if (!surveys.length) {
+      tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty">
+          <div class="icon">📭</div>
+          <p>No hay encuestas aún. <a href="/admin/crear.html">Crea la primera.</a></p>
+        </div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = surveys.map(s => {
+      const publicUrl = `${location.origin}/encuesta.html?s=${s.slug}`;
+      const date = new Date(s.created_at).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+      return `<tr>
+        <td><strong>${esc(s.title)}</strong></td>
+        <td>
+          <span class="link-text">${esc(s.slug)}</span><br/>
+          <button class="btn btn-sm" style="margin-top:4px;background:#f0f4ff;color:#0f3460;border:none;cursor:pointer"
+            onclick="copyLink('${esc(publicUrl)}')">📋 Copiar link</button>
+        </td>
+        <td>
+          <span class="${s.is_active ? 'badge-active' : 'badge-inactive'}">
+            ${s.is_active ? 'Activa' : 'Pausada'}
+          </span>
+        </td>
+        <td><span class="count-badge">${s.response_count}</span></td>
+        <td>${date}</td>
+        <td>
+          <div class="actions">
+            <a href="/admin/resultados.html?s=${s.slug}" class="btn btn-sm btn-primary">📊 Resultados</a>
+            <button class="btn btn-sm ${s.is_active ? 'btn-secondary' : 'btn-success'}"
+              onclick="toggleSurvey('${s.slug}', ${s.is_active})">
+              ${s.is_active ? '⏸ Pausar' : '▶ Activar'}
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteSurvey('${s.slug}', '${esc(s.title)}')">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Copiar link ───────────────────────────────────────────────────────────
+  function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => toast('✅ Link copiado al portapapeles'));
+  }
+
+  // ── Toggle activo ─────────────────────────────────────────────────────────
+  async function toggleSurvey(slug, currentActive) {
+    const res = await fetch(`${API}/surveys/${slug}/toggle`, {
+      method: 'PATCH', headers: headers()
+    });
+    if (res.ok) {
+      toast(currentActive ? '⏸ Encuesta pausada' : '▶ Encuesta activada');
+      loadSurveys();
+    } else {
+      alert('Error al cambiar estado');
+    }
+  }
+
+  // ── Eliminar ──────────────────────────────────────────────────────────────
+  async function deleteSurvey(slug, title) {
+    if (!confirm(`¿Eliminar la encuesta "${title}"?\n\nEsta acción eliminará todos los datos y no se puede deshacer.`)) return;
+    const res = await fetch(`${API}/surveys/${slug}`, {
+      method: 'DELETE', headers: headers()
+    });
+    if (res.ok) {
+      toast('🗑 Encuesta eliminada');
+      loadSurveys();
+    } else {
+      alert('Error al eliminar');
+    }
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
