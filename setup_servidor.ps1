@@ -36,7 +36,8 @@ New-Item -ItemType Directory -Force -Path $LOGS_DIR  | Out-Null
 
 # ── 2. CLONAR REPO ───────────────────────────────────────────────────────────
 Write-Host "[2/10] Clonando repositorio..." -ForegroundColor Yellow
-if (Test-Path "$APP_DIR\.git") {
+$gitDir = Join-Path $APP_DIR ".git"
+if (Test-Path $gitDir) {
     Write-Host "       Repo ya existe — haciendo pull..." -ForegroundColor Gray
     Set-Location $APP_DIR
     git reset --hard origin/main
@@ -56,11 +57,11 @@ Write-Host "       Instalando dependencias..." -ForegroundColor Gray
 
 # ── 4. CREAR ARCHIVO .env ────────────────────────────────────────────────────
 Write-Host "[4/10] Creando archivo .env..." -ForegroundColor Yellow
-$envContent = @"
-DATABASE_URL=sqlite:///$($DB_PATH.Replace('\', '/'))
-ADMIN_KEY=$ADMIN_KEY
-"@
-Set-Content -Path "$APP_DIR\.env" -Value $envContent -Encoding UTF8
+$dbPathForward = $DB_PATH.Replace('\', '/')
+$envLine1 = "DATABASE_URL=sqlite:///" + $dbPathForward
+$envLine2 = "ADMIN_KEY=" + $ADMIN_KEY
+$envLines = $envLine1 + "`n" + $envLine2
+[System.IO.File]::WriteAllText("$APP_DIR\.env", $envLines, [System.Text.Encoding]::UTF8)
 Write-Host "       .env creado: DATABASE_URL apunta a $DB_PATH" -ForegroundColor Gray
 
 # ── 5. DETENER SERVICIO ANTERIOR (si existe) ──────────────────────────────────
