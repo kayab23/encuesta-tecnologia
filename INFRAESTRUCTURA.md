@@ -88,14 +88,16 @@ BD             : miapp_db  /  miapp_user  /  miapp_pass_2026
 
 ## 5. Puertos en uso (evitar colisiones)
 
-| Puerto | Ocupado por |
-|---|---|
-| `80` | KezelNginx (frontend CRM) |
-| `5432` | PostgreSQL 17 |
-| `8001` | Costos Vitaris FastAPI |
-| `8002` | KezelCRM FastAPI (backend CRM visitas) |
-| `8003` | ← disponible para siguiente proyecto |
-| `8004` | ← disponible |
+| Puerto | Ocupado por | URL publica |
+|---|---|---|
+| `80`   | KezelNginx (frontend CRM Visitas) | — |
+| `5432` | PostgreSQL 17 | — |
+| `8000` | Costos RedBeat — FastAPI backend | https://batch-consequence-nuke-justify.trycloudflare.com · http://192.168.1.250:8000 |
+| `8001` | Costos Vitaris — FastAPI backend | — |
+| `8002` | KezelCRM — FastAPI backend (CRM Visitas Medicas) | — |
+| `8003` | Encuestas Platform — FastAPI backend | https://ace-hiring-skating-objects.trycloudflare.com |
+| `8004` | disponible | — |
+| `8005` | disponible | — |
 
 ---
 
