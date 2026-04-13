@@ -1,17 +1,9 @@
-# =============================================================================
-# setup_servidor.ps1 — Deploy de Encuestas_Platform en el servidor dedicado
-# Ejecutar en el SERVIDOR (RDP) como Administrador desde C:\WINDOWS\system32
-# =============================================================================
-# USO:
-#   1. Copiar este archivo al servidor (o clonarlo desde GitHub)
-#   2. Abrir PowerShell como Administrador
-#   3. Set-ExecutionPolicy Bypass -Scope Process -Force
-#   4. .\setup_servidor.ps1
-# =============================================================================
+# setup_servidor.ps1 - Deploy de Encuestas_Platform en el servidor dedicado
+# Ejecutar como Administrador: Set-ExecutionPolicy Bypass -Scope Process -Force
+# luego: .\setup_servidor.ps1
 
 $ErrorActionPreference = "Stop"
 
-# ── CONFIGURACIÓN ────────────────────────────────────────────────────────────
 $REPO_URL    = "https://github.com/kayab23/encuesta-tecnologia.git"
 $BASE_DIR    = "C:\ENCUESTAS"
 $APP_DIR     = "$BASE_DIR\app"
@@ -24,50 +16,45 @@ $CF_SERVICE  = "CloudflaredEncuestas"
 $ADMIN_KEY   = "anuar2309"
 $SURVEY_SLUG = "encuesta-de-necesidades-tecnologicas"
 
-# Cloudflared exe — reutiliza el del CRM si existe, si no descarga
-$CF_EXE = if (Test-Path "C:\CRM\cloudflared.exe") { "C:\CRM\cloudflared.exe" } else { "$BASE_DIR\cloudflared.exe" }
+if (Test-Path "C:\CRM\cloudflared.exe") {
+    $CF_EXE = "C:\CRM\cloudflared.exe"
+} else {
+    $CF_EXE = "$BASE_DIR\cloudflared.exe"
+}
 
-Write-Host "=== ENCUESTAS PLATFORM — SETUP SERVIDOR ===" -ForegroundColor Cyan
+Write-Host "[1/9] Creando directorios..." -ForegroundColor Yellow
+New-Item -ItemType Directory -Force -Path $BASE_DIR | Out-Null
+New-Item -ItemType Directory -Force -Path $LOGS_DIR | Out-Null
 
-# ── 1. CREAR DIRECTORIOS ─────────────────────────────────────────────────────
-Write-Host "[1/10] Creando directorios..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path $BASE_DIR  | Out-Null
-New-Item -ItemType Directory -Force -Path $LOGS_DIR  | Out-Null
-
-# ── 2. CLONAR REPO ───────────────────────────────────────────────────────────
-Write-Host "[2/10] Clonando repositorio..." -ForegroundColor Yellow
+Write-Host "[2/9] Clonando o actualizando repo..." -ForegroundColor Yellow
 $gitDir = Join-Path $APP_DIR ".git"
 if (Test-Path $gitDir) {
-    Write-Host "       Repo ya existe — haciendo pull..." -ForegroundColor Gray
     Set-Location $APP_DIR
     git reset --hard origin/main
     git pull origin main
 } else {
     git clone --branch main $REPO_URL $APP_DIR
+    Set-Location $APP_DIR
 }
 
-# ── 3. CREAR VENV E INSTALAR DEPENDENCIAS ────────────────────────────────────
-Write-Host "[3/10] Creando entorno virtual Python..." -ForegroundColor Yellow
-if (-not (Test-Path "$VENV_DIR\Scripts\python.exe")) {
+Write-Host "[3/9] Creando venv e instalando dependencias..." -ForegroundColor Yellow
+$pythonExe = Join-Path $VENV_DIR "Scripts\python.exe"
+if (-not (Test-Path $pythonExe)) {
     python -m venv $VENV_DIR
 }
-Write-Host "       Instalando dependencias..." -ForegroundColor Gray
-& "$VENV_DIR\Scripts\pip.exe" install --upgrade pip --quiet
-& "$VENV_DIR\Scripts\pip.exe" install -r "$APP_DIR\requirements.txt" --quiet
+$pipExe  = Join-Path $VENV_DIR "Scripts\pip.exe"
+$reqFile = Join-Path $APP_DIR "requirements.txt"
+& $pipExe install --upgrade pip --quiet
+& $pipExe install -r $reqFile --quiet
 
-# ── 4. CREAR ARCHIVO .env ────────────────────────────────────────────────────
-Write-Host "[4/10] Creando archivo .env..." -ForegroundColor Yellow
-$dbPathForward = $DB_PATH.Replace('\', '/')
-$envLine1 = "DATABASE_URL=sqlite:///" + $dbPathForward
-$envLine2 = "ADMIN_KEY=" + $ADMIN_KEY
-$envLines = $envLine1 + "`n" + $envLine2
-[System.IO.File]::WriteAllText("$APP_DIR\.env", $envLines, [System.Text.Encoding]::UTF8)
-Write-Host "       .env creado: DATABASE_URL apunta a $DB_PATH" -ForegroundColor Gray
+Write-Host "[4/9] Creando .env..." -ForegroundColor Yellow
+$dbFwd   = $DB_PATH.Replace('\', '/')
+$envText = "DATABASE_URL=sqlite:///" + $dbFwd + "`nADMIN_KEY=" + $ADMIN_KEY
+$envFile = Join-Path $APP_DIR ".env"
+[System.IO.File]::WriteAllText($envFile, $envText, [System.Text.Encoding]::UTF8)
 
-# ── 5. DETENER SERVICIO ANTERIOR (si existe) ──────────────────────────────────
-Write-Host "[5/10] Verificando servicios existentes..." -ForegroundColor Yellow
+Write-Host "[5/9] Limpiando servicios anteriores..." -ForegroundColor Yellow
 if (Get-Service $SERVICE -ErrorAction SilentlyContinue) {
-    Write-Host "       Deteniendo servicio $SERVICE existente..." -ForegroundColor Gray
     nssm stop $SERVICE confirm
     nssm remove $SERVICE confirm
 }
@@ -76,119 +63,101 @@ if (Get-Service $CF_SERVICE -ErrorAction SilentlyContinue) {
     nssm remove $CF_SERVICE confirm
 }
 
-# ── 6. REGISTRAR SERVICIO NSSM — BACKEND ─────────────────────────────────────
-Write-Host "[6/10] Registrando servicio NSSM $SERVICE..." -ForegroundColor Yellow
-nssm install $SERVICE "$VENV_DIR\Scripts\uvicorn.exe"
+Write-Host "[6/9] Registrando servicio NSSM backend..." -ForegroundColor Yellow
+$uvicornExe = Join-Path $VENV_DIR "Scripts\uvicorn.exe"
+$backendLog = Join-Path $LOGS_DIR "backend.log"
+nssm install $SERVICE $uvicornExe
 nssm set $SERVICE AppDirectory $APP_DIR
 nssm set $SERVICE AppParameters "main:app --host 127.0.0.1 --port $PORT --workers 2"
 nssm set $SERVICE AppEnvironmentExtra "PYTHONPATH=$APP_DIR"
-nssm set $SERVICE AppStdout "$LOGS_DIR\backend.log"
-nssm set $SERVICE AppStderr "$LOGS_DIR\backend.log"
+nssm set $SERVICE AppStdout $backendLog
+nssm set $SERVICE AppStderr $backendLog
 nssm set $SERVICE AppRotateFiles 1
 nssm set $SERVICE AppRotateBytes 10485760
 nssm set $SERVICE Start SERVICE_AUTO_START
 Start-Service $SERVICE
 Start-Sleep -Seconds 3
-$svc = Get-Service $SERVICE
-Write-Host "       Estado: $($svc.Status)" -ForegroundColor $(if ($svc.Status -eq 'Running') { 'Green' } else { 'Red' })
+Write-Host "       Estado: $((Get-Service $SERVICE).Status)" -ForegroundColor Green
 
-# ── 7. CLOUDFLARE QUICK TUNNEL ───────────────────────────────────────────────
-Write-Host "[7/10] Configurando Cloudflare Tunnel..." -ForegroundColor Yellow
+Write-Host "[7/9] Configurando Cloudflare Tunnel..." -ForegroundColor Yellow
 if (-not (Test-Path $CF_EXE)) {
-    Write-Host "       Descargando cloudflared..." -ForegroundColor Gray
-    $cfUrl = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-    Invoke-WebRequest -Uri $cfUrl -OutFile $CF_EXE
+    $cfDl = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
+    Invoke-WebRequest -Uri $cfDl -OutFile $CF_EXE
 }
+$cfLog = Join-Path $LOGS_DIR "cloudflared.log"
 nssm install $CF_SERVICE $CF_EXE
 nssm set $CF_SERVICE AppParameters "tunnel --url http://localhost:$PORT"
-nssm set $CF_SERVICE AppStdout "$LOGS_DIR\cloudflared.log"
-nssm set $CF_SERVICE AppStderr "$LOGS_DIR\cloudflared.log"
+nssm set $CF_SERVICE AppStdout $cfLog
+nssm set $CF_SERVICE AppStderr $cfLog
 nssm set $CF_SERVICE Start SERVICE_AUTO_START
 Start-Service $CF_SERVICE
+Write-Host "       Esperando URL Cloudflare (20 seg)..." -ForegroundColor Gray
+Start-Sleep -Seconds 20
 
-# Esperar a que aparezca la URL en el log
-Write-Host "       Esperando URL de Cloudflare (15 seg)..." -ForegroundColor Gray
-Start-Sleep -Seconds 15
-$cfUrl = Select-String -Path "$LOGS_DIR\cloudflared.log" -Pattern "trycloudflare\.com" |
-         Select-Object -Last 1 |
-         ForEach-Object { ($_.Line -split '"' | Where-Object { $_ -match 'https://.*trycloudflare' }) | Select-Object -First 1 }
-
-if (-not $cfUrl) {
-    # Segundo intento con otro patrón
-    $cfUrl = Select-String -Path "$LOGS_DIR\cloudflared.log" -Pattern "https://.*\.trycloudflare\.com" |
-             Select-Object -Last 1 |
-             ForEach-Object { [regex]::Match($_.Line, 'https://[^\s"]+trycloudflare\.com').Value }
+$cfPublicUrl = ""
+$ml = Select-String -Path $cfLog -Pattern "trycloudflare\.com" -ErrorAction SilentlyContinue | Select-Object -Last 1
+if ($ml) {
+    $rm = [regex]::Match($ml.Line, 'https://[^\s"]+trycloudflare\.com')
+    if ($rm.Success) { $cfPublicUrl = $rm.Value }
 }
 
-Write-Host ""
-Write-Host "=== URL PÚBLICA CLOUDFLARE ===" -ForegroundColor Cyan
-Write-Host $cfUrl -ForegroundColor Green
-Write-Host ""
-
-# ── 8. CREAR LA ENCUESTA EN LA BD ────────────────────────────────────────────
-Write-Host "[8/10] Creando encuesta con 24 preguntas en la BD..." -ForegroundColor Yellow
+Write-Host "[8/9] Creando encuesta en la BD..." -ForegroundColor Yellow
 Start-Sleep -Seconds 2
 
-$surveyBody = @{
-    title       = "Encuesta de Necesidades Tecnológicas"
+$q = @(
+    @{ label = "Nombre completo";                                   type = "text";     required = $true  }
+    @{ label = "Correo electronico";                                type = "email";    required = $false }
+    @{ label = "Departamento o Area";                               type = "text";     required = $true  }
+    @{ label = "Puesto o Cargo";                                    type = "text";     required = $true  }
+    @{ label = "Herramienta principal actual";                      type = "checkbox"; required = $false }
+    @{ label = "Tiempo en tareas manuales por semana";              type = "select";   required = $false }
+    @{ label = "Principales problemas o cuellos de botella";        type = "textarea"; required = $false }
+    @{ label = "Tipo de solucion deseada";                         type = "checkbox"; required = $false }
+    @{ label = "Detalle de aplicacion web o movil deseada";        type = "textarea"; required = $false }
+    @{ label = "Impacto esperado de solucion tecnologica (1-5)";   type = "scale";    required = $true  }
+    @{ label = "Urgencia de implementacion";                        type = "radio";    required = $true  }
+    @{ label = "Disponibilidad para participar en prueba";         type = "radio";    required = $false }
+    @{ label = "Mejoras esperadas al implementar nuevo software";  type = "checkbox"; required = $false }
+    @{ label = "Areas con las que necesita intercambiar info";     type = "textarea"; required = $false }
+    @{ label = "Como se realiza la comunicacion entre areas";      type = "textarea"; required = $false }
+    @{ label = "Problemas en la coordinacion entre areas";         type = "textarea"; required = $false }
+    @{ label = "Utilidad de un sistema compartido entre areas";    type = "radio";    required = $false }
+    @{ label = "El area necesita un nuevo sistema o aplicacion";   type = "radio";    required = $false }
+    @{ label = "Procesos que requieren nuevo sistema";             type = "textarea"; required = $false }
+    @{ label = "Funcionalidades requeridas del nuevo sistema";     type = "textarea"; required = $false }
+    @{ label = "Preferencia de tipo de software";                  type = "radio";    required = $false }
+    @{ label = "Criticidad de la solucion necesaria";              type = "radio";    required = $false }
+    @{ label = "Comentarios adicionales";                          type = "textarea"; required = $false }
+    @{ label = "Propuesta de solucion especifica";                 type = "textarea"; required = $false }
+)
+
+$body = @{
+    title       = "Encuesta de Necesidades Tecnologicas"
     slug        = $SURVEY_SLUG
-    description = "Diagnóstico interno de necesidades tecnológicas por área"
-    questions   = @(
-        @{ label = "Nombre completo";                                   type = "text";     required = $true  }
-        @{ label = "Correo electrónico";                                type = "email";    required = $false }
-        @{ label = "Departamento / Área";                               type = "text";     required = $true  }
-        @{ label = "Puesto / Cargo";                                    type = "text";     required = $true  }
-        @{ label = "Herramienta principal actual";                      type = "checkbox"; required = $false }
-        @{ label = "Tiempo en tareas manuales por semana";              type = "select";   required = $false }
-        @{ label = "Principales problemas o cuellos de botella";        type = "textarea"; required = $false }
-        @{ label = "Tipo de solución deseada";                         type = "checkbox"; required = $false }
-        @{ label = "Detalle de aplicación web o móvil deseada";        type = "textarea"; required = $false }
-        @{ label = "Impacto esperado de solución tecnológica (1-5)";   type = "scale";    required = $true  }
-        @{ label = "Urgencia de implementación";                        type = "radio";    required = $true  }
-        @{ label = "Disponibilidad para participar en diseño/prueba";  type = "radio";    required = $false }
-        @{ label = "Mejoras esperadas al implementar nuevo software";  type = "checkbox"; required = $false }
-        @{ label = "Áreas con las que necesita intercambiar información"; type = "textarea"; required = $false }
-        @{ label = "Cómo se realiza actualmente la comunicación entre áreas"; type = "textarea"; required = $false }
-        @{ label = "Problemas en la coordinación entre áreas";         type = "textarea"; required = $false }
-        @{ label = "Utilidad de un sistema compartido entre áreas";    type = "radio";    required = $false }
-        @{ label = "¿El área necesita un nuevo sistema o aplicación?"; type = "radio";    required = $false }
-        @{ label = "Procesos que requieren nuevo sistema";             type = "textarea"; required = $false }
-        @{ label = "Funcionalidades requeridas del nuevo sistema";     type = "textarea"; required = $false }
-        @{ label = "Preferencia de tipo de software";                  type = "radio";    required = $false }
-        @{ label = "Criticidad de la solución necesaria";              type = "radio";    required = $false }
-        @{ label = "Comentarios adicionales";                          type = "textarea"; required = $false }
-        @{ label = "Propuesta de solución específica";                 type = "textarea"; required = $false }
-    )
+    description = "Diagnostico interno de necesidades tecnologicas"
+    questions   = $q
 } | ConvertTo-Json -Depth 5
 
 try {
-    $result = Invoke-RestMethod -Uri "http://127.0.0.1:$PORT/api/admin/surveys" `
+    $res = Invoke-RestMethod `
+        -Uri "http://127.0.0.1:$PORT/api/admin/surveys" `
         -Method POST `
         -Headers @{ "x-admin-key" = $ADMIN_KEY; "Content-Type" = "application/json" } `
-        -Body $surveyBody
-    Write-Host "       Encuesta creada — slug: $($result.slug)" -ForegroundColor Green
+        -Body $body
+    Write-Host "       Encuesta creada - slug: $($res.slug)" -ForegroundColor Green
 } catch {
-    Write-Host "       AVISO: $($_.Exception.Message) (puede que ya exista)" -ForegroundColor DarkYellow
+    Write-Host "       $($_.Exception.Message)" -ForegroundColor DarkYellow
 }
 
-# ── 9. VERIFICACIÓN FINAL ────────────────────────────────────────────────────
-Write-Host "[9/10] Verificación de servicios..." -ForegroundColor Yellow
-$statusBackend = (Get-Service $SERVICE).Status
-$statusCF      = (Get-Service $CF_SERVICE).Status
-Write-Host "       $SERVICE   : $statusBackend" -ForegroundColor $(if ($statusBackend -eq 'Running') { 'Green' } else { 'Red' })
-Write-Host "       $CF_SERVICE : $statusCF"    -ForegroundColor $(if ($statusCF      -eq 'Running') { 'Green' } else { 'Red' })
-
-# ── 10. RESUMEN FINAL ────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host " DEPLOY COMPLETADO" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host " Backend local : http://127.0.0.1:$PORT"
-Write-Host " URL pública   : $cfUrl"
-Write-Host " Admin key     : $ADMIN_KEY"
-Write-Host " BD            : $DB_PATH"
-Write-Host " Logs          : $LOGS_DIR"
+Write-Host " Local  : http://127.0.0.1:$PORT"
+Write-Host " Publica: $cfPublicUrl"
+Write-Host " Key    : $ADMIN_KEY"
+Write-Host " BD     : $DB_PATH"
 Write-Host ""
-Write-Host " IMPORTANTE: Actualiza la URL en encuesta_necesidades_tecnologia.html:"
-Write-Host " SURVEY_URL = '$cfUrl/api/encuesta/$SURVEY_SLUG/responder'"
+Write-Host " URL para el HTML:"
+Write-Host " $cfPublicUrl/api/encuesta/$SURVEY_SLUG/responder"
 Write-Host "============================================" -ForegroundColor Cyan
