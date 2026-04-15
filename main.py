@@ -60,7 +60,9 @@ app.include_router(public.router, prefix="/api", tags=["Público"])
 
 @app.get("/health", tags=["Sistema"])
 def health():
-    return {"status": "ok"}
+    from database import DATABASE_URL
+    db_type = "postgresql" if DATABASE_URL.startswith("postgresql") else "sqlite"
+    return {"status": "ok", "db": db_type}
 
 # Sirve el frontend como archivos estáticos
 app.mount("/", StaticFiles(directory=str(BASE_DIR / "frontend"), html=True), name="frontend")
