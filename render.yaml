@@ -10,7 +10,7 @@ services:
           name: encuestas-db
           property: connectionString
       - key: ADMIN_KEY
-        generateValue: true   # Render genera un valor aleatorio seguro
+        value: anuar2309
     autoDeploy: true
 
 databases:
