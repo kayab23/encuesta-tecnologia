@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manual de uso — Plataforma de Encuestas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; color: #333; min-height: 100vh; }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar h1 { font-size: 1.1rem; font-weight: 700; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; border: none;
+      transition: opacity 0.2s; font-family: inherit; text-decoration: none;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
+    .btn-primary { background: #e94560; color: white; }
+
+    /* ── Layout ── */
+    .wrapper {
+      display: flex;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 80px;
+    }
+    .sidebar-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+      margin-bottom: 0.8rem;
+    }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #555;
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar nav a:hover { background: #e8f0ff; color: #0f3460; }
+    .sidebar nav a.active { background: #0f3460; color: white; font-weight: 600; }
+    .sidebar nav a .num {
+      width: 20px; height: 20px;
+      background: #e94560;
+      color: white;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Contenido ── */
+    .content { flex: 1; min-width: 0; }
+
+    .hero {
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      margin-bottom: 2rem;
+    }
+    .hero h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+    .hero p { opacity: 0.85; font-size: 0.95rem; line-height: 1.6; }
+    .hero-badges { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.2rem; }
+    .hero-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ── Secciones ── */
+    .section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
+      border-bottom: 2px solid #f0f4ff;
+      background: #f8faff;
+    }
+    .section-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: white;
+      font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-header h3 { font-size: 1rem; color: #0f3460; font-weight: 700; margin-bottom: 0.15rem; }
+    .section-header p { font-size: 0.8rem; color: #888; }
+    .section-body { padding: 1.5rem; }
+
+    /* ── Steps ── */
+    .steps { list-style: none; }
+    .step {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.4rem;
+      align-items: flex-start;
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 28px; height: 28px;
+      background: #0f3460;
+      color: white;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-content strong { display: block; font-size: 0.9rem; color: #222; margin-bottom: 0.3rem; }
+    .step-content p { font-size: 0.85rem; color: #666; line-height: 1.6; }
+    .step-content .hint {
+      display: inline-block;
+      background: #fff8e1;
+      border-left: 3px solid #f9a825;
+      color: #7a5100;
+      padding: 0.5rem 0.8rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+      line-height: 1.5;
+    }
+    .step-content .success-hint {
+      display: inline-block;
+      background: #e8f5e9;
+      border-left: 3px solid #43a047;
+      color: #1b5e20;
+      padding: 0.5rem 0.8rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+      line-height: 1.5;
+    }
+
+    /* ── Tipos de preguntas ── */
+    .types-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .type-card {
+      border: 2px solid #e8f0ff;
+      border-radius: 10px;
+      padding: 1rem;
+      background: #f8faff;
+    }
+    .type-card .label {
+      display: inline-block;
+      background: #0f3460;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: monospace;
+      margin-bottom: 0.5rem;
+    }
+    .type-card strong { display: block; font-size: 0.88rem; color: #222; margin-bottom: 0.3rem; }
+    .type-card p { font-size: 0.8rem; color: #666; line-height: 1.5; }
+    .type-card .example {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 0.5rem;
+      font-style: italic;
+      border-top: 1px solid #e0e8f8;
+      padding-top: 0.5rem;
+    }
+
+    /* ── URL demo ── */
+    .url-demo {
+      background: #1a1a2e;
+      color: #a8ff78;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.88rem;
+      word-break: break-all;
+      margin: 0.8rem 0;
+    }
+    .url-demo .domain { color: #78c1f3; }
+    .url-demo .path { color: #f9c74f; }
+    .url-demo .param { color: #a8ff78; }
+
+    /* ── Resultados ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .res-card {
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      border: 2px solid #e8f0ff;
+    }
+    .res-card .icon { font-size: 2rem; margin-bottom: 0.4rem; }
+    .res-card strong { display: block; font-size: 0.85rem; color: #0f3460; margin-bottom: 0.3rem; }
+    .res-card p { font-size: 0.78rem; color: #777; line-height: 1.5; }
+
+    /* ── Tabla de acciones ── */
+    .actions-table { width: 100%; border-collapse: collapse; }
+    .actions-table th {
+      background: #f0f4ff;
+      padding: 0.7rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #0f3460;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .actions-table td {
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #f0f0f0;
+      color: #555;
+      vertical-align: middle;
+    }
+    .actions-table tr:last-child td { border-bottom: none; }
+    .actions-table .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .badge-green { background: #d4edda; color: #155724; }
+    .badge-red { background: #f8d7da; color: #721c24; }
+    .badge-blue { background: #cce5ff; color: #004085; }
+    .badge-orange { background: #fff3cd; color: #856404; }
+
+    /* ── Alerta ── */
+    .alert {
+      display: flex;
+      gap: 0.8rem;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-top: 1rem;
+    }
+    .alert-warning { background: #fff8e1; border: 1px solid #fdd835; color: #5d4037; }
+    .alert-info { background: #e3f2fd; border: 1px solid #42a5f5; color: #0d47a1; }
+    .alert .icon { font-size: 1.2rem; flex-shrink: 0; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.4rem 0;
+      font-size: 0.87rem;
+      color: #555;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist .check { color: #28a745; font-weight: 700; flex-shrink: 0; }
+
+    /* ── API Section ── */
+    .code-block {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 1.2rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin-top: 0.8rem;
+    }
+    .code-block .kw { color: #f9c74f; }
+    .code-block .str { color: #a8ff78; }
+    .code-block .num { color: #78c1f3; }
+    .code-block .comment { color: #666; font-style: italic; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .wrapper { flex-direction: column; }
+      .sidebar { width: 100%; position: static; }
+      .types-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <h1>📋 Plataforma de Encuestas — Manual de uso</h1>
+  <a href="/admin/" class="btn btn-outline">← Volver al panel</a>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Contenido</div>
+    <nav id="sidebar-nav">
+      <a href="#intro" class="active"><span class="num">0</span> Introducción</a>
+      <a href="#login"><span class="num">1</span> Acceso al panel</a>
+      <a href="#crear"><span class="num">2</span> Crear encuesta</a>
+      <a href="#tipos"><span class="num">3</span> Tipos de pregunta</a>
+      <a href="#compartir"><span class="num">4</span> Compartir link</a>
+      <a href="#responder"><span class="num">5</span> Vista del encuestado</a>
+      <a href="#resultados"><span class="num">6</span> Ver resultados</a>
+      <a href="#exportar"><span class="num">7</span> Exportar CSV</a>
+      <a href="#gestionar"><span class="num">8</span> Gestionar encuestas</a>
+      <a href="#api"><span class="num">9</span> API / Integración</a>
+    </nav>
+  </aside>
+
+  <!-- ── Contenido ── -->
+  <main class="content">
+
+    <!-- Hero -->
+    <div class="hero" id="intro">
+      <h2>📖 Manual completo de la plataforma</h2>
+      <p>Esta guía explica paso a paso cómo crear encuestas, distribuirlas y analizar los resultados. Todo se almacena en la base de datos de producción en tiempo real.</p>
+      <div class="hero-badges">
+        <span class="hero-badge">🚀 Sin instalación</span>
+        <span class="hero-badge">☁️ 100% en la nube</span>
+        <span class="hero-badge">📊 Resultados en vivo</span>
+        <span class="hero-badge">📥 Exportación CSV</span>
+      </div>
+    </div>
+
+    <!-- ── 1. Acceso ── -->
+    <div class="section" id="login">
+      <div class="section-header">
+        <div class="section-icon">🔐</div>
+        <div>
+          <h3>1. Acceso al panel de administración</h3>
+          <p>Cómo ingresar al panel para gestionar todo</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Abre el panel admin</strong>
+              <p>Navega a la URL del panel:</p>
+              <div class="url-demo">
+                <span class="domain">https://encuesta-tecnologia.onrender.com</span><span class="path">/admin/</span>
+              </div>
+              <p>Si estás en local: <code style="background:#f0f4ff;padding:2px 6px;border-radius:4px;font-size:0.82rem">http://localhost:8000/admin/</code></p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Ingresa la clave de administrador</strong>
+              <p>Aparecerá una ventana de acceso. Escribe la <strong>ADMIN_KEY</strong> configurada en el servidor y presiona <kbd style="background:#f0f0f0;border:1px solid #ccc;padding:1px 6px;border-radius:4px;font-size:0.8rem">Enter</kbd> o el botón Entrar.</p>
+              <div class="hint">💡 La clave se guarda en la sesión del navegador. No necesitas volver a ingresarla mientras la pestaña esté abierta.</div>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Panel principal cargado</strong>
+              <p>Verás la lista de todas las encuestas creadas. Si es la primera vez, el panel estará vacío.</p>
+              <div class="success-hint">✅ Si ves la tabla de encuestas, el acceso fue exitoso.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── 2. Crear encuesta ── -->
+    <div class="section" id="crear">
+      <div class="section-header">
+        <div class="section-icon">✏️</div>
+        <div>
+          <h3>2. Crear una nueva encuesta</h3>
+          <p>Diseña tu encuesta con título, descripción y preguntas</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Haz clic en "+ Nueva encuesta"</strong>
+              <p>Botón rojo en la esquina superior derecha del panel principal. Abrirá el formulario de creación.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Completa los datos generales</strong>
+              <p><strong>Título</strong> — Nombre visible de la encuesta (obligatorio). Se usará para generar el slug/URL automáticamente.<br/>
+              <strong>Descripción</strong> — Texto introductorio que verán los encuestados (opcional pero recomendado).</p>
+              <div class="hint">💡 El título "Satisfacción del Cliente 2026" generará el link <code style="font-size:0.8rem">/encuesta.html?s=satisfaccion-del-cliente-2026</code></div>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Agrega preguntas</strong>
+              <p>Haz clic en <strong>"+ Agregar pregunta"</strong> para añadir cada pregunta. Para cada una debes definir:</p>
+              <ul style="padding-left:1.2rem;margin-top:0.4rem;font-size:0.85rem;color:#555;line-height:1.8">
+                <li><strong>Texto</strong> — Lo que le preguntas al encuestado</li>
+                <li><strong>Tipo de respuesta</strong> — Ver sección 3</li>
+                <li><strong>Opciones</strong> — Para radio, checkbox, select (una por línea)</li>
+                <li><strong>Obligatoria</strong> — Marca el checkbox si la pregunta no puede quedar sin respuesta</li>
+              </ul>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>Ordena las preguntas</strong>
+              <p>Usa los botones <strong>▲ ▼</strong> en cada tarjeta de pregunta para cambiar el orden en que aparecerán.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <strong>Guarda la encuesta</strong>
+              <p>Haz clic en <strong>"Guardar encuesta"</strong>. El sistema la creará en la base de datos y te redirigirá al panel principal donde aparecerá como Activa.</p>
+              <div class="success-hint">✅ La encuesta se activa automáticamente al crearla y ya puede recibir respuestas.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── 3. Tipos de pregunta ── -->
+    <div class="section" id="tipos">
+      <div class="section-header">
+        <div class="section-icon">🗂️</div>
+        <div>
+          <h3>3. Tipos de pregunta disponibles</h3>
+          <p>Elige el tipo adecuado según la respuesta que necesitas capturar</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="types-grid">
+          <div class="type-card">
+            <span class="label">radio</span>
+            <strong>Opción única</strong>
+            <p>El encuestado elige <em>una sola</em> opción de una lista de botones de radio.</p>
+            <div class="example">Ej: ¿Cuál es tu nivel de satisfacción? → Bajo / Medio / Alto</div>
+          </div>
+          <div class="type-card">
+            <span class="label">checkbox</span>
+            <strong>Opción múltiple</strong>
+            <p>El encuestado puede seleccionar <em>varias</em> opciones al mismo tiempo.</p>
+            <div class="example">Ej: ¿Qué servicios usas? → Email / Chat / Teléfono / Portal</div>
+          </div>
+          <div class="type-card">
+            <span class="label">select</span>
+            <strong>Lista desplegable</strong>
+            <p>Igual que radio pero en formato menú compacto. Ideal para listas largas (más de 5 opciones).</p>
+            <div class="example">Ej: ¿En qué departamento trabajas? → [lista de áreas]</div>
+          </div>
+          <div class="type-card">
+            <span class="label">scale</span>
+            <strong>Escala numérica</strong>
+            <p>Botones de selección en un rango numérico configurable (ej. 1 a 5 o 1 a 10). Incluye etiquetas en extremos.</p>
+            <div class="example">Ej: Del 1 al 5, ¿qué tan probable es que recomiendes el servicio? (NPS)</div>
+          </div>
+          <div class="type-card">
+            <span class="label">text</span>
+            <strong>Texto corto</strong>
+            <p>Campo de una sola línea para respuestas breves como nombre, correo, cargo, etc.</p>
+            <div class="example">Ej: ¿Cuál es tu nombre completo?</div>
+          </div>
+          <div class="type-card">
+            <span class="label">textarea</span>
+            <strong>Texto largo</strong>
+            <p>Área de texto multilínea para comentarios, sugerencias o respuestas extensas.</p>
+            <div class="example">Ej: ¿Tienes alguna sugerencia para mejorar el servicio?</div>
+          </div>
+        </div>
+        <div class="alert alert-info" style="margin-top:1.2rem">
+          <span class="icon">ℹ️</span>
+          <span>Para los tipos <strong>radio</strong>, <strong>checkbox</strong> y <strong>select</strong>, debes escribir cada opción en una línea separada en el campo "Opciones". Para <strong>scale</strong>, configura el valor mínimo, máximo y sus etiquetas.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. Compartir ── -->
+    <div class="section" id="compartir">
+      <div class="section-header">
+        <div class="section-icon">🔗</div>
+        <div>
+          <h3>4. Compartir el link de la encuesta</h3>
+          <p>Cómo obtener y distribuir el enlace único de cada encuesta</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Ubica la encuesta en el panel principal</strong>
+              <p>En la tabla verás la columna <strong>"Slug / Link"</strong> con el identificador único de cada encuesta.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Copia el link con el botón 📋</strong>
+              <p>Haz clic en <strong>"📋 Copiar link"</strong>. El enlace completo se copia al portapapeles automáticamente. Tendrá este formato:</p>
+              <div class="url-demo">
+                <span class="domain">https://encuesta-tecnologia.onrender.com</span><span class="path">/encuesta.html</span><span class="param">?s=nombre-de-tu-encuesta</span>
+              </div>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Distribuye el link</strong>
+              <p>Comparte el enlace por cualquier canal: correo electrónico, WhatsApp, Slack, Teams, QR, redes sociales, etc. Cualquier persona con el link puede responder sin necesidad de cuenta.</p>
+              <div class="hint">💡 La encuesta debe estar en estado <strong>Activa</strong> para recibir respuestas. Si está Pausada, el encuestado verá un mensaje de no disponible.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── 5. Vista del encuestado ── -->
+    <div class="section" id="responder">
+      <div class="section-header">
+        <div class="section-icon">👤</div>
+        <div>
+          <h3>5. Experiencia del encuestado</h3>
+          <p>Lo que ve y hace la persona que recibe el link</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Abre el link recibido</strong>
+              <p>El encuestado abre el link en cualquier navegador (móvil o escritorio). No requiere cuenta ni instalación.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Ve el título y descripción</strong>
+              <p>La página muestra el título, descripción y el número total de preguntas.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Responde las preguntas</strong>
+              <p>Completa todas las preguntas marcadas como obligatorias. Las preguntas opcionales pueden dejarse en blanco.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>Envía la respuesta</strong>
+              <p>Al presionar <strong>"Enviar respuesta"</strong>, el formulario se valida. Si falta alguna pregunta obligatoria, se resalta en rojo. Si todo está correcto, la respuesta se guarda en la base de datos.</p>
+              <div class="success-hint">✅ El encuestado ve una pantalla de confirmación. La respuesta queda registrada de forma permanente.</div>
+            </div>
+          </li>
+        </ol>
+        <div class="alert alert-warning">
+          <span class="icon">⚠️</span>
+          <span>Actualmente la plataforma permite responder múltiples veces desde el mismo dispositivo. Si necesitas respuestas únicas por persona, considera distribuir el link de forma controlada (correo nominativo, etc.).</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 6. Resultados ── -->
+    <div class="section" id="resultados">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div>
+          <h3>6. Ver resultados en tiempo real</h3>
+          <p>Analiza las respuestas con gráficas automáticas</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Abre los resultados desde el panel</strong>
+              <p>En la tabla de encuestas haz clic en el botón <strong>"📊 Resultados"</strong> de la encuesta que quieras analizar.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Resumen general</strong>
+              <p>En la parte superior verás las métricas globales:</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="results-grid">
+          <div class="res-card">
+            <div class="icon">📝</div>
+            <strong>Total de respuestas</strong>
+            <p>Número de personas que completaron la encuesta</p>
+          </div>
+          <div class="res-card">
+            <div class="icon">❓</div>
+            <strong>Preguntas</strong>
+            <p>Cantidad de preguntas en la encuesta</p>
+          </div>
+          <div class="res-card">
+            <div class="icon">🕐</div>
+            <strong>Última respuesta</strong>
+            <p>Fecha y hora del registro más reciente</p>
+          </div>
+        </div>
+
+        <ol class="steps" style="margin-top:1.2rem">
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Gráficas por pregunta</strong>
+              <p>Cada pregunta muestra sus resultados de forma visual:</p>
+              <ul style="padding-left:1.2rem;margin-top:0.5rem;font-size:0.85rem;color:#555;line-height:1.9">
+                <li><strong>radio / select / scale</strong> → Gráfica de dona con porcentajes</li>
+                <li><strong>checkbox</strong> → Gráfica de barras horizontales</li>
+                <li><strong>text / textarea</strong> → Lista de respuestas de texto con conteo de apariciones</li>
+              </ul>
+              <div class="hint">💡 Las gráficas se actualizan en tiempo real cada vez que entras a la página de resultados.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── 7. Exportar CSV ── -->
+    <div class="section" id="exportar">
+      <div class="section-header">
+        <div class="section-icon">📥</div>
+        <div>
+          <h3>7. Exportar resultados a CSV</h3>
+          <p>Descarga todos los datos para análisis en Excel o Google Sheets</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ol class="steps">
+          <li class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Desde la página de resultados</strong>
+              <p>Haz clic en el botón <strong>"📥 Exportar CSV"</strong> en la barra superior de resultados.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Archivo descargado</strong>
+              <p>Se descargará un archivo <code style="background:#f0f4ff;padding:2px 6px;border-radius:4px;font-size:0.82rem">resultados-[slug].csv</code> con la siguiente estructura:</p>
+              <div class="code-block">
+<span class="comment"># Columnas del CSV</span>
+response_id | submitted_at | Pregunta 1 | Pregunta 2 | ...
+<span class="num">1</span>           | <span class="str">2026-04-15</span>  | <span class="str">Muy satisfecho</span> | <span class="str">Sí</span>       | ...
+<span class="num">2</span>           | <span class="str">2026-04-15</span>  | <span class="str">Neutral</span>        | <span class="str">No</span>       | ...
+              </div>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Abre en Excel o Google Sheets</strong>
+              <p>El CSV usa codificación UTF-8 y separador de coma. En Excel: <em>Datos → Desde texto/CSV</em>. En Google Sheets: <em>Archivo → Importar</em>.</p>
+              <div class="success-hint">✅ Desde el CSV puedes crear tablas dinámicas, filtros, gráficas personalizadas y análisis avanzado.</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ── 8. Gestionar ── -->
+    <div class="section" id="gestionar">
+      <div class="section-header">
+        <div class="section-icon">⚙️</div>
+        <div>
+          <h3>8. Gestionar encuestas existentes</h3>
+          <p>Pausar, activar y eliminar encuestas desde el panel</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <table class="actions-table">
+          <thead>
+            <tr>
+              <th>Acción</th>
+              <th>Botón</th>
+              <th>Descripción</th>
+              <th>Efecto inmediato</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Pausar</strong></td>
+              <td><span class="badge badge-orange">⏸ Pausar</span></td>
+              <td>Desactiva temporalmente la encuesta</td>
+              <td>El link muestra "No disponible" a nuevos encuestados. Los datos existentes se conservan.</td>
+            </tr>
+            <tr>
+              <td><strong>Activar</strong></td>
+              <td><span class="badge badge-green">▶ Activar</span></td>
+              <td>Reactiva una encuesta pausada</td>
+              <td>El link vuelve a funcionar y acepta respuestas de nuevo.</td>
+            </tr>
+            <tr>
+              <td><strong>Ver resultados</strong></td>
+              <td><span class="badge badge-blue">📊 Resultados</span></td>
+              <td>Abre la página de análisis</td>
+              <td>Muestra gráficas y datos en tiempo real.</td>
+            </tr>
+            <tr>
+              <td><strong>Eliminar</strong></td>
+              <td><span class="badge badge-red">🗑 Eliminar</span></td>
+              <td>Borra permanentemente la encuesta</td>
+              <td>Se eliminan la encuesta, todas sus preguntas y todas las respuestas. <strong>No se puede deshacer.</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="alert alert-warning" style="margin-top:1rem">
+          <span class="icon">⚠️</span>
+          <span><strong>Importante:</strong> La eliminación es permanente. Si solo quieres cerrar la encuesta temporalmente, usa <strong>Pausar</strong>. Elimina solo si ya no necesitas ninguno de los datos.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 9. API ── -->
+    <div class="section" id="api">
+      <div class="section-header">
+        <div class="section-icon">🔌</div>
+        <div>
+          <h3>9. API REST / Integración avanzada</h3>
+          <p>Crea encuestas programáticamente y consulta resultados desde código</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <ul class="checklist">
+          <li><span class="check">✓</span> La documentación interactiva de la API está disponible en <a href="/docs" target="_blank" style="color:#0f3460;font-weight:600">/docs</a> (Swagger UI)</li>
+          <li><span class="check">✓</span> Todas las rutas admin requieren el header <code style="background:#f0f4ff;padding:2px 6px;border-radius:4px;font-size:0.82rem">X-Admin-Key: tu_clave</code></li>
+          <li><span class="check">✓</span> Las rutas públicas (responder encuesta) no requieren autenticación</li>
+        </ul>
+
+        <p style="margin-top:1.2rem;font-size:0.85rem;color:#555;font-weight:600">Ejemplo: crear encuesta via API (curl)</p>
+        <div class="code-block"><span class="kw">curl</span> -X POST <span class="str">"https://encuesta-tecnologia.onrender.com/api/admin/surveys"</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-Admin-Key: tu_clave"</span> \
+  -d <span class="str">'{
+    "title": "Encuesta de Satisfacción",
+    "description": "Cuéntanos tu experiencia",
+    "questions": [
+      {
+        "type": "radio",
+        "label": "¿Cómo calificarías el servicio?",
+        "options": ["Excelente", "Bueno", "Regular", "Malo"],
+        "required": true,
+        "order": 1
+      },
+      {
+        "type": "textarea",
+        "label": "¿Tienes algún comentario adicional?",
+        "required": false,
+        "order": 2
+      }
+    ]
+  }'</span></div>
+
+        <p style="margin-top:1.2rem;font-size:0.85rem;color:#555;font-weight:600">Endpoints disponibles</p>
+        <table class="actions-table" style="margin-top:0.5rem">
+          <thead><tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-green">GET</span></td><td><code>/api/admin/surveys</code></td><td>Listar todas las encuestas</td></tr>
+            <tr><td><span class="badge badge-blue">POST</span></td><td><code>/api/admin/surveys</code></td><td>Crear nueva encuesta</td></tr>
+            <tr><td><span class="badge badge-green">GET</span></td><td><code>/api/admin/surveys/{slug}/results</code></td><td>Obtener resultados</td></tr>
+            <tr><td><span class="badge badge-green">GET</span></td><td><code>/api/admin/surveys/{slug}/export</code></td><td>Exportar resultados CSV</td></tr>
+            <tr><td><span class="badge badge-orange">PATCH</span></td><td><code>/api/admin/surveys/{slug}/toggle</code></td><td>Activar / Pausar</td></tr>
+            <tr><td><span class="badge badge-red">DELETE</span></td><td><code>/api/admin/surveys/{slug}</code></td><td>Eliminar encuesta</td></tr>
+            <tr><td><span class="badge badge-green">GET</span></td><td><code>/api/encuesta/{slug}</code></td><td>Leer encuesta pública</td></tr>
+            <tr><td><span class="badge badge-blue">POST</span></td><td><code>/api/encuesta/{slug}/responder</code></td><td>Enviar respuesta</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Resaltar link activo en sidebar al hacer scroll
+  const sections = document.querySelectorAll('.section, .hero');
+  const links = document.querySelectorAll('#sidebar-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`#sidebar-nav a[href="#${id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
