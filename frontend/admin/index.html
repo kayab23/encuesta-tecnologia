@@ -198,6 +198,7 @@
     }
     .btn-login:hover { opacity: 0.9; }
     .login-error { color: #e94560; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+    .login-info  { color: #555;    font-size: 0.82rem; margin-top: 0.5rem; min-height: 1.2em; }
 
     /* Toast */
     .toast {
@@ -229,8 +230,9 @@
       <input type="password" id="key-input" placeholder="Clave de administrador" />
       <button type="button" class="toggle-eye" onclick="toggleEye()" title="Mostrar/ocultar">👁</button>
     </div>
-    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <button class="btn-login" id="btn-entrar" onclick="doLogin()">Entrar</button>
     <div class="login-error" id="login-error">Clave incorrecta. Intenta de nuevo.</div>
+    <div class="login-info" id="login-info"></div>
   </div>
 </div>
 
@@ -297,15 +299,50 @@
   async function doLogin() {
     const key = document.getElementById('key-input').value.trim();
     if (!key) return;
-    // Verificar clave intentando listar encuestas
-    const res = await fetch(`${API}/surveys`, { headers: { 'X-Admin-Key': key } });
-    if (res.ok) {
-      sessionStorage.setItem('adminKey', key);
-      document.getElementById('login-overlay').style.display = 'none';
-      loadSurveys();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
+
+    const btnEl   = document.getElementById('btn-entrar');
+    const errEl   = document.getElementById('login-error');
+    const infoEl  = document.getElementById('login-info');
+
+    btnEl.disabled = true;
+    errEl.style.display = 'none';
+    infoEl.textContent = '';
+
+    const MAX_TRIES = 4;
+    const DELAY_MS  = 4000; // esperar 4 s entre intentos (cold start Render)
+
+    for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+      try {
+        if (attempt > 1) {
+          infoEl.textContent = `Conectando con el servidor… (intento ${attempt}/${MAX_TRIES})`;
+          await new Promise(r => setTimeout(r, DELAY_MS));
+        }
+        const res = await fetch(`${API}/surveys`, {
+          headers: { 'X-Admin-Key': key },
+          signal: AbortSignal.timeout(12000)
+        });
+        if (res.ok) {
+          sessionStorage.setItem('adminKey', key);
+          document.getElementById('login-overlay').style.display = 'none';
+          loadSurveys();
+          return;
+        } else {
+          // Clave incorrecta — no reintentar
+          errEl.style.display = 'block';
+          infoEl.textContent = '';
+          btnEl.disabled = false;
+          return;
+        }
+      } catch (_) {
+        // Error de red / timeout — posible cold start, reintentamos
+      }
     }
+
+    // Agotados los intentos
+    infoEl.textContent = '';
+    errEl.textContent = 'No se pudo conectar con el servidor. Intenta en unos segundos.';
+    errEl.style.display = 'block';
+    btnEl.disabled = false;
   }
 
   document.getElementById('key-input').addEventListener('keydown', e => {
