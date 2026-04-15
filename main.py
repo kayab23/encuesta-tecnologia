@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from database import Base, engine
+from database import engine
 from routers import admin, public
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,6 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Las migraciones se ejecutan con `alembic upgrade head` antes del arranque.
+    # En desarrollo local también se pueden crear tablas si no existen.
+    from database import Base
     Base.metadata.create_all(bind=engine)
     yield
 

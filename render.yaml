@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: encuestas-platform
+    runtime: python
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: encuestas-db
+          property: connectionString
+      - key: ADMIN_KEY
+        generateValue: true   # Render genera un valor aleatorio seguro
+    autoDeploy: true
+
+databases:
+  - name: encuestas-db
+    plan: free
