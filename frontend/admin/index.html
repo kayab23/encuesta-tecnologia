@@ -184,7 +184,7 @@
       line-height: 1;
     }
     .toggle-eye:hover { color: #0f3460; }
-    .login-box button {
+    .btn-login {
       width: 100%;
       padding: 0.8rem;
       background: linear-gradient(135deg, #0f3460, #533483);
@@ -196,6 +196,7 @@
       cursor: pointer;
       font-family: inherit;
     }
+    .btn-login:hover { opacity: 0.9; }
     .login-error { color: #e94560; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
 
     /* Toast */
@@ -228,7 +229,7 @@
       <input type="password" id="key-input" placeholder="Clave de administrador" />
       <button type="button" class="toggle-eye" onclick="toggleEye()" title="Mostrar/ocultar">👁</button>
     </div>
-    <button onclick="doLogin()">Entrar</button>
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
     <div class="login-error" id="login-error">Clave incorrecta. Intenta de nuevo.</div>
   </div>
 </div>
