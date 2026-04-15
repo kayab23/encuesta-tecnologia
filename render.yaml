@@ -2,8 +2,8 @@ services:
   - type: web
     name: encuestas-platform
     runtime: python
-    buildCommand: pip install -r requirements.txt && alembic upgrade head
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: "pip install -r requirements.txt && alembic upgrade head"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
