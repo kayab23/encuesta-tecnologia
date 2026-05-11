@@ -326,13 +326,14 @@
           document.getElementById('login-overlay').style.display = 'none';
           loadSurveys();
           return;
-        } else {
+        } else if (res.status === 401) {
           // Clave incorrecta — no reintentar
           errEl.style.display = 'block';
           infoEl.textContent = '';
           btnEl.disabled = false;
           return;
         }
+        // 5xx u otro error del servidor (cold start / BD no lista) — reintentamos
       } catch (_) {
         // Error de red / timeout — posible cold start, reintentamos
       }
