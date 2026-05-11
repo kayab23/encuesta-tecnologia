@@ -6,7 +6,25 @@ $body = @{
         # ── SECCIÓN 1: Datos Generales ──────────────────────────────────────
         @{ order = 1;  type = "text";     label = "Nombre completo";       required = $true;  options = $null }
         @{ order = 2;  type = "text";     label = "Correo electrónico";    required = $false; options = $null }
-        @{ order = 3;  type = "text";     label = "Departamento / Área";   required = $true;  options = $null }
+        @{
+            order    = 3
+            type     = "select"
+            label    = "Departamento / Área"
+            required = $true
+            options  = @(
+                "Dirección General"
+                "Dirección Comercial"
+                "Dirección de Operaciones"
+                "Administración"
+                "Contabilidad / Finanzas"
+                "Recursos Humanos"
+                "Tecnologías de la Información"
+                "Almacén / Logística"
+                "Ventas"
+                "Compras"
+                "Otro"
+            )
+        }
         @{ order = 4;  type = "text";     label = "Puesto / Cargo";        required = $true;  options = $null }
 
         # ── SECCIÓN 2: Situación Actual ──────────────────────────────────────
@@ -132,13 +150,7 @@ $body = @{
                 "No lo sé"
             )
         }
-        @{
-            order    = 22
-            type     = "radio"
-            label    = "¿Qué tan crítico es contar con esta solución?"
-            required = $false
-            options  = @("Urgente", "Importante", "Deseable")
-        }
+        @{ order = 22; type = "textarea"; label = "¿Conoces alguna aplicación existente que cubra este requerimiento o que tenga funcionalidades similares a las que necesitas?"; required = $false; options = $null }
 
         # ── SECCIÓN 8: Comentarios Adicionales ───────────────────────────────
         @{ order = 23; type = "textarea"; label = "¿Hay algo más que quieras compartir sobre las necesidades de tu área?";      required = $false; options = $null }
