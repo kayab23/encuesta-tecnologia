@@ -15,24 +15,26 @@ from routers import admin, public
 BASE_DIR = Path(__file__).resolve().parent
 logger = logging.getLogger("keepalive")
 
-PING_INTERVAL = 10 * 60  # 10 minutos
+PING_INTERVAL = 5 * 60  # 5 minutos (Render duerme tras 15 min de inactividad)
 
 
 async def _keepalive():
-    """Pinga el propio /health cada 10 min para evitar el reposo en Render."""
+    """Pinga el propio /health cada 5 min para evitar el reposo en Render."""
     base_url = os.getenv("RENDER_EXTERNAL_URL", "").rstrip("/")
     if not base_url:
         logger.info("RENDER_EXTERNAL_URL no definida — keep-alive desactivado (entorno local)")
         return
     url = f"{base_url}/health"
+    # Espera inicial de 30 s para que el servidor arranque completamente
+    await asyncio.sleep(30)
     async with httpx.AsyncClient(timeout=10) as client:
         while True:
-            await asyncio.sleep(PING_INTERVAL)
             try:
                 r = await client.get(url)
                 logger.info("keep-alive ping → %s %s", url, r.status_code)
             except Exception as exc:
                 logger.warning("keep-alive error: %s", exc)
+            await asyncio.sleep(PING_INTERVAL)
 
 
 @asynccontextmanager

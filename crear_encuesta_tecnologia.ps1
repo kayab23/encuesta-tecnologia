@@ -1,80 +1,80 @@
 $body = @{
-    title       = "Encuesta de Necesidades Tecnologicas"
-    description = "Ayudanos a entender las herramientas y procesos que necesita tu area para trabajar mejor con datos y tecnologia."
+    title       = "Encuesta de Necesidades Tecnológicas"
+    description = "Ayúdanos a entender las herramientas y procesos que necesita tu área para trabajar mejor con datos y tecnología."
     questions   = @(
 
-        # ── SECCION 1: Datos Generales ──────────────────────────────────────
-        @{ order = 1;  type = "text";     label = "Nombre completo";    required = $true;  options = $null }
-        @{ order = 2;  type = "text";     label = "Correo electronico"; required = $false; options = $null }
-        @{ order = 3;  type = "text";     label = "Departamento / Area"; required = $true; options = $null }
-        @{ order = 4;  type = "text";     label = "Puesto / Cargo";     required = $true;  options = $null }
+        # ── SECCIÓN 1: Datos Generales ──────────────────────────────────────
+        @{ order = 1;  type = "text";     label = "Nombre completo";       required = $true;  options = $null }
+        @{ order = 2;  type = "text";     label = "Correo electrónico";    required = $false; options = $null }
+        @{ order = 3;  type = "text";     label = "Departamento / Área";   required = $true;  options = $null }
+        @{ order = 4;  type = "text";     label = "Puesto / Cargo";        required = $true;  options = $null }
 
-        # ── SECCION 2: Situacion Actual ──────────────────────────────────────
+        # ── SECCIÓN 2: Situación Actual ──────────────────────────────────────
         @{
             order    = 5
             type     = "checkbox"
-            label    = "Cual es la herramienta principal que usa hoy para gestionar informacion o procesos? (puedes seleccionar varias)"
+            label    = "¿Cuál es la herramienta principal que usa hoy para gestionar información o procesos? (puedes seleccionar varias)"
             required = $false
             options  = @(
-                "Excel / Hoja de calculo"
+                "Excel / Hoja de cálculo"
                 "Sistema ERP (SAP, Odoo, etc.)"
-                "Aplicacion interna de la empresa"
-                "Papel / Documentos fisicos"
-                "Correo electronico"
+                "Aplicación interna de la empresa"
+                "Papel / Documentos físicos"
+                "Correo electrónico"
                 "Otra"
             )
         }
-        @{ order = 6; type = "text"; label = "Si seleccionaste 'Otra' herramienta, especifica cual:"; required = $false; options = $null }
+        @{ order = 6; type = "text"; label = "Si seleccionaste 'Otra' herramienta, especifica cuál:"; required = $false; options = $null }
         @{
             order    = 7
             type     = "select"
-            label    = "Cuanto tiempo dedica a tareas manuales o repetitivas en su area? (por semana estimado)"
+            label    = "¿Cuánto tiempo dedica a tareas manuales o repetitivas en su área? (por semana estimado)"
             required = $false
             options  = @(
                 "Menos de 2 horas"
                 "Entre 2 y 5 horas"
                 "Entre 5 y 10 horas"
-                "Mas de 10 horas"
+                "Más de 10 horas"
             )
         }
-        @{ order = 8; type = "textarea"; label = "Cuales son los principales problemas o cuellos de botella actuales?"; required = $false; options = $null }
+        @{ order = 8; type = "textarea"; label = "¿Cuáles son los principales problemas o cuellos de botella actuales?"; required = $false; options = $null }
 
-        # ── SECCION 3: Tipo de Solucion ──────────────────────────────────────
+        # ── SECCIÓN 3: Tipo de Solución ──────────────────────────────────────
         @{
             order    = 9
             type     = "checkbox"
-            label    = "Que tipo de solucion considera mas util para su area? (puedes seleccionar varias)"
+            label    = "¿Qué tipo de solución considera más útil para su área? (puedes seleccionar varias)"
             required = $false
             options  = @(
-                "Automatizacion en Excel (macros, Power Query, formulas avanzadas)"
+                "Automatización en Excel (macros, Power Query, fórmulas avanzadas)"
                 "Dashboard / Reporte visual (Power BI, Google Looker Studio)"
-                "Aplicacion web interna (formularios, catalogos, consultas)"
-                "Aplicacion movil (captura de datos en campo)"
-                "Automatizacion de correos / notificaciones automaticas"
+                "Aplicación web interna (formularios, catálogos, consultas)"
+                "Aplicación móvil (captura de datos en campo)"
+                "Automatización de correos / notificaciones automáticas"
                 "Base de datos centralizada (reemplazar archivos dispersos)"
-                "Integracion entre sistemas (conectar ERP, Excel, correo, etc.)"
-                "Capacitacion / formacion en herramientas existentes"
-                "No tengo claro que necesito (requiero asesoria)"
+                "Integración entre sistemas (conectar ERP, Excel, correo, etc.)"
+                "Capacitación / formación en herramientas existentes"
+                "No tengo claro qué necesito (requiero asesoría)"
             )
         }
-        @{ order = 10; type = "textarea"; label = "Si eligio Aplicacion web o movil, para que proceso especifico la necesitaria?"; required = $false; options = $null }
+        @{ order = 10; type = "textarea"; label = "Si eligió Aplicación web o móvil, ¿para qué proceso específico la necesitaría?"; required = $false; options = $null }
 
-        # ── SECCION 4: Prioridades ────────────────────────────────────────────
+        # ── SECCIÓN 4: Prioridades ────────────────────────────────────────────
         @{
             order    = 11
             type     = "scale"
-            label    = "Que tanto impacto tendria una solucion tecnologica en su area? (1 = Poco impacto, 5 = Impacto muy alto)"
+            label    = "¿Qué tanto impacto tendría una solución tecnológica en su área? (1 = Poco impacto, 5 = Impacto muy alto)"
             required = $true
             options  = @{ min = 1; max = 5; min_label = "Poco impacto"; max_label = "Impacto muy alto" }
         }
         @{
             order    = 12
             type     = "radio"
-            label    = "Cual es la urgencia de implementar una solucion?"
+            label    = "¿Cuál es la urgencia de implementar una solución?"
             required = $true
             options  = @(
-                "Inmediata - ya esta afectando los resultados del area"
-                "Corto plazo - proximos 3 meses"
+                "Inmediata - ya está afectando los resultados del área"
+                "Corto plazo - próximos 3 meses"
                 "Mediano plazo - 3 a 6 meses"
                 "Sin urgencia definida por el momento"
             )
@@ -82,74 +82,67 @@ $body = @{
         @{
             order    = 13
             type     = "radio"
-            label    = "Estaria dispuesto a participar activamente en el diseno/prueba de una solucion?"
+            label    = "¿Estaría dispuesto a participar activamente en el diseño/prueba de una solución?"
             required = $false
             options  = @(
-                "Si, con gusto"
-                "Si, dependiendo de la disponibilidad de tiempo"
+                "Sí, con gusto"
+                "Sí, dependiendo de la disponibilidad de tiempo"
                 "No en este momento"
             )
         }
 
-        # ── SECCION 5: Impacto Esperado ───────────────────────────────────────
+        # ── SECCIÓN 5: Impacto Esperado ───────────────────────────────────────
         @{
             order    = 14
             type     = "checkbox"
-            label    = "Que mejoras esperas al implementar un nuevo software o mejorar procesos? (puedes seleccionar varias)"
+            label    = "¿Qué mejoras esperas al implementar un nuevo software o mejorar procesos? (puedes seleccionar varias)"
             required = $false
             options  = @(
                 "Ahorro de tiempo"
-                "Reduccion de errores"
+                "Reducción de errores"
                 "Mejor control"
                 "Mejores reportes"
                 "Mejor experiencia del cliente/usuario"
             )
         }
 
-        # ── SECCION 6: Integracion y Colaboracion ─────────────────────────────
-        @{ order = 15; type = "textarea"; label = "Con que otras areas necesitas intercambiar informacion?";           required = $false; options = $null }
-        @{ order = 16; type = "textarea"; label = "Como se realiza actualmente esa comunicacion?";                     required = $false; options = $null }
-        @{ order = 17; type = "textarea"; label = "Que problemas existen en la coordinacion entre areas?";             required = $false; options = $null }
+        # ── SECCIÓN 6: Integración y Colaboración ─────────────────────────────
+        @{ order = 15; type = "textarea"; label = "¿Con qué otras áreas necesitas intercambiar información?";          required = $false; options = $null }
+        @{ order = 16; type = "textarea"; label = "¿Cómo se realiza actualmente esa comunicación?";                    required = $false; options = $null }
+        @{ order = 17; type = "textarea"; label = "¿Qué problemas existen en la coordinación entre áreas?";            required = $false; options = $null }
         @{
             order    = 18
             type     = "radio"
-            label    = "Te seria util un sistema compartido o integrado entre areas?"
+            label    = "¿Te sería útil un sistema compartido o integrado entre áreas?"
             required = $false
-            options  = @("Si", "No")
+            options  = @("Sí", "No")
         }
 
-        # ── SECCION 7: Necesidades de Software ───────────────────────────────
+        # ── SECCIÓN 7: Necesidades de Software ───────────────────────────────
+        @{ order = 19; type = "textarea"; label = "¿Para qué procesos necesitaría el sistema?";         required = $false; options = $null }
+        @{ order = 20; type = "textarea"; label = "¿Qué funcionalidades debería tener?";                required = $false; options = $null }
         @{
-            order    = 19
+            order    = 21
             type     = "radio"
-            label    = "Crees que el area necesita un nuevo sistema o aplicacion?"
-            required = $false
-            options  = @("Si", "No", "No estoy seguro/a")
-        }
-        @{ order = 20; type = "textarea"; label = "Para que procesos necesitaria el sistema?";           required = $false; options = $null }
-        @{ order = 21; type = "textarea"; label = "Que funcionalidades deberia tener?";                  required = $false; options = $null }
-        @{
-            order    = 22
-            type     = "radio"
-            label    = "Preferirías un software existente o desarrollado a la medida?"
+            label    = "¿Preferirías un software existente o desarrollado a la medida?"
             required = $false
             options  = @(
                 "Un software existente (comprado/licenciado)"
                 "Un software desarrollado a la medida"
-                "No lo se"
+                "No lo sé"
             )
         }
         @{
-            order    = 23
+            order    = 22
             type     = "radio"
-            label    = "Que tan critico es contar con esta solucion?"
+            label    = "¿Qué tan crítico es contar con esta solución?"
             required = $false
             options  = @("Urgente", "Importante", "Deseable")
         }
 
-        # ── SECCION 8: Comentarios Adicionales ───────────────────────────────
-        @{ order = 24; type = "textarea"; label = "Hay algo mas que quieras compartir sobre las necesidades de tu area?";           required = $false; options = $null }
-        @{ order = 25; type = "textarea"; label = "Tienes alguna solucion especifica en mente que te gustaria proponer?";           required = $false; options = $null }
+        # ── SECCIÓN 8: Comentarios Adicionales ───────────────────────────────
+        @{ order = 23; type = "textarea"; label = "¿Hay algo más que quieras compartir sobre las necesidades de tu área?";      required = $false; options = $null }
+        @{ order = 24; type = "textarea"; label = "¿Tienes alguna solución específica en mente que te gustaría proponer?";      required = $false; options = $null }
     )
 } | ConvertTo-Json -Depth 10
 
