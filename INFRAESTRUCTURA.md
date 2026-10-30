@@ -361,7 +361,7 @@ nssm restart KezelCRM
 | Directorio | `C:\CRM\app\` |
 | Backend URL interna | `http://127.0.0.1:8002` |
 | Frontend acceso local | `http://127.0.0.1:80` |
-| BD | `kezel_medica` / `kezel_user` / `kezel_pass_2026` |
+| BD | `kezel_medica` / `kezel_user` / (clave en el .env del servidor, no se documenta aqui) |
 | Admin app | `admin@kezelmedica.mx` / `Kezel2026!` |
 | Swagger | `http://127.0.0.1:8002/docs` |
 | Log deploy | `C:\CRM\logs\deploy.log` |
